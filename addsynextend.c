@@ -176,23 +176,19 @@ void extendsyn(char* filname, float length, float extension)
     int attackf, decayf;
     findattackdecay(&attackf, &decayf);
     //
-     float* cmagold;
-     cmagold = (float*)calloc(npts * nhar1, sizeof(float));
-     memcpy(cmagold, cmag, npts * nhar1);
-     float* dfrold;
-     dfrold = dfr;
-     P("line 190\n");
+     float* cmagold = cmag;
+     float* dfrold = dfr;
      int nptsnew = length/dt;
+     P("nptsnew: %d\n", nptsnew);
      cmag = (float*)calloc(nptsnew * nhar1, sizeof(float));
      dfr = (float*)calloc(nptsnew * nhar1, sizeof(float));
-     P("line 194\n");
-    for (i = 0; i < decayf; i ++)
+    for (i = 0; i < decayf; i++)
     {
         int k;
         for (k = 1; k < nhar1; k++)
         {
-            cmag[k + i * nhar1] = cmagold[i];
-            dfr[k + i * nhar1] = dfrold[i];
+            cmag[k + i * nhar1] = cmagold[k + i * nhar1];
+            dfr[k + i * nhar1] = dfrold[k + i * nhar1];
         }
     }
     float reversef = decayf - 0.5 * extension/dt;
@@ -201,25 +197,28 @@ void extendsyn(char* filname, float length, float extension)
     {
         for (k = 1; k < nhar1; k++)
         {
-            cmag[k + (i++) * nhar1] = cmagold[k + j * nhar1];
-            dfr[k + (i++) * nhar1] = dfrold[k + j * nhar1];
+            cmag[k + i * nhar1] = cmagold[k + j * nhar1];
+            dfr[k + i * nhar1] = dfrold[k + j * nhar1];
         }
+        i++;
     }
     for (j = reversef; j < decayf; j++)
     {
         for (k = 1; k < nhar1; k++)
         {
-            cmag[k + (i++) * nhar1] = cmagold[k + j * nhar1];
-            dfr[k + (i++) * nhar1] = dfrold[k + j * nhar1];
+            cmag[k + i * nhar1] = cmagold[k + j * nhar1];
+            dfr[k + i * nhar1] = dfrold[k + j * nhar1];
         }
+        i++;
     }
     for (j = decayf; j < npts; j++)
     {
         for (k = 1; k < nhar1; k++)
         {
-            cmag[k + (i++) * nhar1] = cmagold[k + j * nhar1];
-            dfr[k + (i++) * nhar1] = dfrold[k + j * nhar1];
+            cmag[k + i * nhar1] = cmagold[k + j * nhar1];
+            dfr[k + i * nhar1] = dfrold[k + j * nhar1];
         }
+        i++;
     }
 }
 
