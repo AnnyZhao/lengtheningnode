@@ -100,7 +100,7 @@ int main ( int argc, char** argv )
         P("Try again.\n");				    /* jwb 02/03/17 */
     }
 
-    extendsyn(synfil,totalt,extendt);
+    extendsyn(synfil, totalt, extendt);
     P("the extension is done");
     /*  resynthesize tone at sample rate fs */
     P("Begin synthesis\n");
@@ -134,6 +134,7 @@ void findattackdecay(int *attackf, int *decayf)
     int i = 0;
     float* dbarr = (float*)calloc(npts+1, sizeof(float));
     float sumdb = 0;
+    int npts_nonzero = 0;
     for (i = 0; i < npts; i++)
     {
         if (i < 10)
@@ -143,8 +144,9 @@ void findattackdecay(int *attackf, int *decayf)
 
         dbarr[i] = 20.*log10f(cmag[i * nhar1]);
         sumdb += dbarr[i];
+        if (dbarr[i] > 17.0) npts_nonzero += 1;
     }
-    float avgdb = sumdb/npts;
+    float avgdb = sumdb/npts_nonzero;
     P("db average = %.1f\n",avgdb);
 
     //first pass calculation
@@ -168,6 +170,8 @@ void findattackdecay(int *attackf, int *decayf)
       }
      //printf("i=%d\n",i);
     }
+
+    *decayf = *decayf - (*decayf - *attackf) * 0.3;
 }
 
 void extendsyn(char* filname, float length, float extension)
@@ -191,7 +195,7 @@ void extendsyn(char* filname, float length, float extension)
             dfr[k + i * nhar1] = dfrold[k + i * nhar1];
         }
     }
-    float reversef = decayf - 0.5 * extension/dt;
+    float reversef = decayf - 0.5 * extension / dt;
     int j,k;
     for (j = decayf; j > reversef; j--)
     {
@@ -220,6 +224,9 @@ void extendsyn(char* filname, float length, float extension)
         }
         i++;
     }
+
+    npts = nptsnew;
+    tl = length;
 }
 
 void addsyn(char* filnam, int byte_reverse) /* jwb 12/06/99 */
