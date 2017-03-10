@@ -107,6 +107,7 @@ int main ( int argc, char** argv )
     if (totalt > origDur)
     {
         decayf = decayf - (decayf - attackf) * 0.3;
+        attackf = attackf + (decayf - attackf) * 0.3;
         float mduration = (decayf - attackf) * dt;
         P("mduration is %f\n", mduration);
         extendt = totalt - origDur;
@@ -258,6 +259,7 @@ void extendsyn(char* filname, float length, float extension, int ratio)
     int attackf, decayf;
     findattackdecay(&attackf, &decayf);
     decayf = decayf - (decayf - attackf) * 0.3;
+    attackf = attackf + (decayf - attackf) * 0.3;
     //
     float* cmagold = cmag;
     float* dfrold = dfr;
@@ -308,7 +310,7 @@ void extendsyn(char* filname, float length, float extension, int ratio)
     //last round, decay to reverse to end
     float mduration = (decayf - attackf) * dt;
     P("mduration is %f\n", mduration);
-    float finalLoopT = extension - fullloop * 2;
+    float finalLoopT = extension - fullloop * mduration * 2;
     P ("final loop time is %f\n", finalLoopT);
     int reversef = decayf - 0.5 * finalLoopT / dt;
     P ("the reversef is %d\n", reversef);
