@@ -32,8 +32,10 @@ char *tail[MAXFTYPES] =  {"snd", "wav"};
 /* function declarations */
 char *gettime(); int getfiltype();
 void calcRMS(float* cmag);
-void extendsyn(char*, float, float);
-void addsyn(char* , int );
+void extendsyn(char* filname, float length, float extension, int ratio);
+void reddursyn(float length, float origDur);
+void addsyn(char* filnam, int byte_reverse);
+float blend(float x);
 void findattackdecay(int *attackf, int *decayf);
 
 /* global variables: */
@@ -84,24 +86,45 @@ int main ( int argc, char** argv )
     int attackf, decayf;
     calcRMS(cmag);
     findattackdecay(&attackf, &decayf);
-    int mduration = (decayf - attackf) * dt;
+    float attackt = attackf * dt;
+    float decayt = decayf * dt;
 
-    float totalt, extendt, ratio;			    /* jwb 02/03/17 */
-    while(1)						    /* jwb 02/03/17 */
-    {							    /* jwb 02/03/17 */
+
+    float totalt, extendt;
+    int ratio;
+						    /* jwb 02/03/17 */
+							    /* jwb 02/03/17 */
+    float minimumT = attackt + (origDur - decayt);
+    while (1)
+    {
         P("Give new time duration: ");			    /* jwb 02/03/17 */
         scanf("%f", &totalt);
-        extendt = totalt - origDur;
-        ratio = extendt / mduration;
-
-        if(ratio <= 2.0) break;				    /* jwb 02/03/17 */
-        P("(time extension) > 2*(time difference)\n");	    /* jwb 02/03/17 */
-        P("This condition is not currently allowed.\n");	    /* jwb 02/03/17 */
-        P("Try again.\n");				    /* jwb 02/03/17 */
+        if (totalt > minimumT) break;
+        P("time is too short to reduce\n");	    /* jwb 02/03/17 */
+        P("Try again.\n");
     }
 
-    extendsyn(synfil, totalt, extendt);
-    P("the extension is done");
+    if (totalt > origDur)
+    {
+        decayf = decayf - (decayf - attackf) * 0.3;
+        float mduration = (decayf - attackf) * dt;
+        P("mduration is %f\n", mduration);
+        extendt = totalt - origDur;
+        P("extendt is %f\n", extendt);
+        ratio = extendt / mduration;
+        P("ratio is %d\n",ratio);
+        extendsyn(synfil, totalt, extendt, ratio);
+        P("the extension is done");
+    }
+
+    if (totalt < origDur)
+    {
+        int f1, f2;
+        float t1, t2;
+        reddursyn(totalt, origDur);
+        P("the reduction is done");
+    }
+
     /*  resynthesize tone at sample rate fs */
     P("Begin synthesis\n");
     addsyn(synfil, byte_reverse);				    /* jwb 12/06/99 */
@@ -170,33 +193,125 @@ void findattackdecay(int *attackf, int *decayf)
       }
      //printf("i=%d\n",i);
     }
-
-    *decayf = *decayf - (*decayf - *attackf) * 0.3;
 }
 
-void extendsyn(char* filname, float length, float extension)
+float blend(float x)
 {
-    int i = 0;
+    return (3*x*x*x - 2*x*x);
+}
+
+void reddursyn(float length, float origDur)
+{
+    float x,w;
     int attackf, decayf;
     findattackdecay(&attackf, &decayf);
-    //
-     float* cmagold = cmag;
-     float* dfrold = dfr;
-     int nptsnew = length/dt;
-     P("nptsnew: %d\n", nptsnew);
-     cmag = (float*)calloc(nptsnew * nhar1, sizeof(float));
-     dfr = (float*)calloc(nptsnew * nhar1, sizeof(float));
-    for (i = 0; i < decayf; i++)
+    int nptsnew = length/dt;
+    int overlapF = nptsnew - attackf - (npts - decayf);
+    int shiftF = npts - nptsnew + overlapF;
+    x = 1./overlapF; //function factor
+
+    float* cmagold = cmag;
+    float* dfrold = dfr;
+
+    cmag = (float*)calloc(nptsnew * nhar1, sizeof(float));
+    dfr = (float*)calloc(nptsnew * nhar1, sizeof(float));
+
+    int i, j, k;
+    // beginning to attackf
+    for (i = 0; i < attackf; i++)
     {
-        int k;
         for (k = 1; k < nhar1; k++)
         {
             cmag[k + i * nhar1] = cmagold[k + i * nhar1];
             dfr[k + i * nhar1] = dfrold[k + i * nhar1];
         }
     }
-    float reversef = decayf - 0.5 * extension / dt;
+    //start to blend
+    for (j = attackf; j < attackf + overlapF + 1; j++)
+    {
+        w = blend(x*(j-attackf));
+        for (k = 1; k < nhar1; k++)
+        {
+            cmag[k + i * nhar1] = (1-w) * cmagold[k + j * nhar1] + w * cmagold[k + (j + shiftF) * nhar1];
+            dfr[k + i * nhar1] = (1-w) * cmagold[k + j * nhar1] + w * cmagold[k + (j + shiftF) * nhar1];
+        }
+        i++;
+    }
+    //decay to end
+    for (j = decayf; j < npts + 1; j++)
+    {
+        for (k = 1; k < nhar1; k++)
+        {
+            cmag[k + i * nhar1] = cmagold[k + j * nhar1];
+            dfr[k + i * nhar1] = dfrold[k + j * nhar1];
+        }
+        i++;
+    }
+    //update parameters for addsyn
+    npts = nptsnew;
+    tl = length;
+}
+
+void extendsyn(char* filname, float length, float extension, int ratio)
+{
+    int i = 0;
+    int attackf, decayf;
+    findattackdecay(&attackf, &decayf);
+    decayf = decayf - (decayf - attackf) * 0.3;
+    //
+    float* cmagold = cmag;
+    float* dfrold = dfr;
+    int nptsnew = length/dt;
+    P("nptsnew: %d\n", nptsnew);
+    cmag = (float*)calloc(nptsnew * nhar1, sizeof(float));
+    dfr = (float*)calloc(nptsnew * nhar1, sizeof(float));
+    int fullloop;
+    fullloop = ratio / 2;
+    P("number of full loops: %d\n",fullloop);
+    // first beginning to decayf
     int j,k;
+    for (i = 0; i < decayf; i++)
+    {
+        for (k = 1; k < nhar1; k++)
+        {
+            cmag[k + i * nhar1] = cmagold[k + i * nhar1];
+            dfr[k + i * nhar1] = dfrold[k + i * nhar1];
+        }
+    }
+    //loop between decay and attack
+    int counter = fullloop;
+    while (counter > 0)
+    {
+        //decaty to attack
+        for (j = decayf; j > attackf; j--)
+        {
+            for (k = 1; k < nhar1; k++)
+            {
+                cmag[k + i * nhar1] = cmagold[k + j * nhar1];
+                dfr[k + i * nhar1] = dfrold[k + j * nhar1];
+            }
+            i++;
+        }
+        //attack to decay
+        for (j = attackf; j < decayf; j++)
+        {
+            for (k = 1; k < nhar1; k++)
+            {
+                cmag[k + i * nhar1] = cmagold[k + j * nhar1];
+                dfr[k + i * nhar1] = dfrold[k + j * nhar1];
+            }
+            i++;
+        }
+        counter--;
+    }
+
+    //last round, decay to reverse to end
+    float mduration = (decayf - attackf) * dt;
+    P("mduration is %f\n", mduration);
+    float finalLoopT = extension - fullloop * 2;
+    P ("final loop time is %f\n", finalLoopT);
+    int reversef = decayf - 0.5 * finalLoopT / dt;
+    P ("the reversef is %d\n", reversef);
     for (j = decayf; j > reversef; j--)
     {
         for (k = 1; k < nhar1; k++)
@@ -206,16 +321,7 @@ void extendsyn(char* filname, float length, float extension)
         }
         i++;
     }
-    for (j = reversef; j < decayf; j++)
-    {
-        for (k = 1; k < nhar1; k++)
-        {
-            cmag[k + i * nhar1] = cmagold[k + j * nhar1];
-            dfr[k + i * nhar1] = dfrold[k + j * nhar1];
-        }
-        i++;
-    }
-    for (j = decayf; j < npts; j++)
+    for (j = reversef; j < npts; j++)
     {
         for (k = 1; k < nhar1; k++)
         {
