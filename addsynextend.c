@@ -122,6 +122,7 @@ int main ( int argc, char** argv )
     {
         int f1, f2;
         float t1, t2;
+        
         reddursyn(totalt, origDur);
         P("the reduction is done");
     }
@@ -198,7 +199,7 @@ void findattackdecay(int *attackf, int *decayf)
 
 float blend(float x)
 {
-    return (3*x*x*x - 2*x*x);
+    return x;
 }
 
 void reddursyn(float length, float origDur)
@@ -207,8 +208,11 @@ void reddursyn(float length, float origDur)
     int attackf, decayf;
     findattackdecay(&attackf, &decayf);
     int nptsnew = length/dt;
+    P("nptsnew: %d\n", nptsnew);
     int overlapF = nptsnew - attackf - (npts - decayf);
-    int shiftF = npts - nptsnew + overlapF;
+    P("overlapF: %d\n", overlapF);
+    int shiftF = npts - nptsnew;
+    P("shiftF: %d\n",shiftF);
     x = 1./overlapF; //function factor
 
     float* cmagold = cmag;
@@ -216,8 +220,9 @@ void reddursyn(float length, float origDur)
 
     cmag = (float*)calloc(nptsnew * nhar1, sizeof(float));
     dfr = (float*)calloc(nptsnew * nhar1, sizeof(float));
+    P ("the size of cmag and dfr is %d", nptsnew * nhar1);
 
-    int i, j, k;
+    int i, j, k, narg1, narg2;
     // beginning to attackf
     for (i = 0; i < attackf; i++)
     {
@@ -231,15 +236,24 @@ void reddursyn(float length, float origDur)
     for (j = attackf; j < attackf + overlapF + 1; j++)
     {
         w = blend(x*(j-attackf));
+        int num = j - attackf;
+        if (num < 10)
+        {
+            P("for frame %d the coeffienct is %f\n", num, w);
+            P("crossfade frame %d with frame %d\n", j, j+shiftF);
+        }
+        int narg1, narg2;
         for (k = 1; k < nhar1; k++)
         {
-            cmag[k + i * nhar1] = (1-w) * cmagold[k + j * nhar1] + w * cmagold[k + (j + shiftF) * nhar1];
-            dfr[k + i * nhar1] = (1-w) * cmagold[k + j * nhar1] + w * cmagold[k + (j + shiftF) * nhar1];
+            narg1 = k + j * nhar1;
+            narg2 = k + (j + shiftF) * nhar1;
+            cmag[k + i * nhar1] = (1-w) * cmagold[narg1] + w * cmagold[narg2];
+            dfr[k + i * nhar1] = (1-w) * cmagold[narg1] + w * cmagold[narg2];
         }
         i++;
     }
     //decay to end
-    for (j = decayf; j < npts + 1; j++)
+    for (j = decayf; j < npts; j++)
     {
         for (k = 1; k < nhar1; k++)
         {
