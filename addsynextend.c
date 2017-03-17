@@ -31,7 +31,7 @@ char *tail[MAXFTYPES] =  {"snd", "wav"};
 
 /* function declarations */
 char *gettime(); int getfiltype();
-void cutSilence(float* cmag, float* dfr);
+void cutSilence(float** cmag, float** dfr);
 void calcRMS(float* cmag);
 void extendsyn(char* filname, float length, float extension, int ratio);
 void reddursyn(float length, float origDur, float attackt, float decayt);
@@ -124,13 +124,13 @@ int main ( int argc, char** argv )
     {
         int f1, f2;
         float t1, t2;
-        //P("Give overlapping time: ");			    /* jwb 02/03/17 */
+        P("Give overlapping time: ");			    /* jwb 02/03/17 */
         scanf("%f %f", &t1, &t2);
         reddursyn(totalt, origDur,t1,t2);
-        P("the reduction is done");
+        P("the reduction is done\n");
     }
 
-    cutSilence(cmag, dfr);
+    cutSilence(&cmag, &dfr);
     /*  resynthesize tone at sample rate fs */
     P("Begin synthesis\n");
     addsyn(synfil, byte_reverse);				    /* jwb 12/06/99 */
@@ -155,27 +155,27 @@ void calcRMS(float* cmag)
     }
 }
 
-void cutSilence(float* cmag, float* dfr)
+void cutSilence(float** cmag, float** dfr)
 {
-    calcRMS(cmag);
+    calcRMS(*cmag);
     int i;
-    int beginF, endF;
+    int beginF = 0, endF = 0;
     float* dbarr = (float*)calloc(npts, sizeof(float));
     //find out the cut point
     for (i = 0; i < npts; i++)
     {
-        dbarr[i] = 20.*log10f(cmag[i * nhar1]);
+        dbarr[i] = 20.*log10f((*cmag)[i * nhar1]);
         if (i > 2000)
         {
             P("DB value for frame %d is %f\n", i , dbarr[i]);
         }
-        if ((dbarr[i-1] < 17.0) && (dbarr[i] > 30.0))
+        if ((dbarr[i-1] < 30.0) && (dbarr[i] > 30.0) && beginF == 0)
         {
             beginF = i;
             P("begin frame is %d\n", i);
         }
 
-        if ((dbarr[i-1] > 21.0) && (dbarr[i] < 20.0))
+        if ((dbarr[i-1] > 29.0) && (dbarr[i] < 29.0) && endF == 0)
         {
             endF = i - 1;
             P("end frame is %d\n", i-1);
@@ -185,15 +185,19 @@ void cutSilence(float* cmag, float* dfr)
     npts = endF - beginF + 1;
     P("npts is now %d\n",npts);
     tl = npts * dt;
-    float * cmagold = cmag;
-    float * dfrold = dfr;
-    cmag = (float*)calloc(npts * nhar1, sizeof(float));
-    dfr = (float*)calloc(npts * nhar1, sizeof(float));
+    float * cmagold = *cmag;
+    float * dfrold = *dfr;
+    *cmag = (float*)calloc(npts * nhar1, sizeof(float));
+    *dfr = (float*)calloc(npts * nhar1, sizeof(float));
     int j = 0;
     for (i = beginF; i < endF + 1; i++)
     {
-        cmag[j] = cmagold[i];
-        dfr[j] = dfrold[i];
+        int k;
+        for (k = 1; k < nhar1; k++)
+        {
+            (*cmag)[k + j * nhar1] = cmagold[k + i * nhar1];
+            (*dfr)[k + j * nhar1] = dfrold[k + i * nhar1];
+        }
         j++;
     }
     //
