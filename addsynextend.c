@@ -1,7 +1,7 @@
 /***************************************************************************
-                                test.c
+                                addsynextend.c
 
-	Author: An Zhao  December, 2016
+	Author: An Zhao  March, 2017
 
  ***************************************************************************/
 
@@ -31,9 +31,10 @@ char *tail[MAXFTYPES] =  {"snd", "wav"};
 
 /* function declarations */
 char *gettime(); int getfiltype();
+void cutSilence(float* cmag, float* dfr);
 void calcRMS(float* cmag);
 void extendsyn(char* filname, float length, float extension, int ratio);
-void reddursyn(float length, float origDur);
+void reddursyn(float length, float origDur, float attackt, float decayt);
 void addsyn(char* filnam, int byte_reverse);
 float blend(float x);
 void findattackdecay(int *attackf, int *decayf);
@@ -79,22 +80,23 @@ int main ( int argc, char** argv )
     }
     P("Analysis data has been read in\n");
 
+    int attackf, decayf;
+    calcRMS(cmag);
 
     float origDur = tl;
     P("original sound duration is %.3f sec:\n", origDur);
 
-    int attackf, decayf;
-    calcRMS(cmag);
     findattackdecay(&attackf, &decayf);
+    // decayf = decayf - (decayf - attackf) * 0.3;
+    // attackf = attackf + (decayf - attackf) * 0.3;
     float attackt = attackf * dt;
     float decayt = decayf * dt;
-
+    P ("attackt is %f and decayt is %f\n", attackt, decayt);
 
     float totalt, extendt;
     int ratio;
-						    /* jwb 02/03/17 */
-							    /* jwb 02/03/17 */
     float minimumT = attackt + (origDur - decayt);
+    P ("minimum time is %f\n", minimumT);
     while (1)
     {
         P("Give new time duration: ");			    /* jwb 02/03/17 */
@@ -122,11 +124,13 @@ int main ( int argc, char** argv )
     {
         int f1, f2;
         float t1, t2;
-        
-        reddursyn(totalt, origDur);
+        //P("Give overlapping time: ");			    /* jwb 02/03/17 */
+        scanf("%f %f", &t1, &t2);
+        reddursyn(totalt, origDur,t1,t2);
         P("the reduction is done");
     }
 
+    cutSilence(cmag, dfr);
     /*  resynthesize tone at sample rate fs */
     P("Begin synthesis\n");
     addsyn(synfil, byte_reverse);				    /* jwb 12/06/99 */
@@ -151,6 +155,50 @@ void calcRMS(float* cmag)
     }
 }
 
+void cutSilence(float* cmag, float* dfr)
+{
+    calcRMS(cmag);
+    int i;
+    int beginF, endF;
+    float* dbarr = (float*)calloc(npts, sizeof(float));
+    //find out the cut point
+    for (i = 0; i < npts; i++)
+    {
+        dbarr[i] = 20.*log10f(cmag[i * nhar1]);
+        if (i > 2000)
+        {
+            P("DB value for frame %d is %f\n", i , dbarr[i]);
+        }
+        if ((dbarr[i-1] < 17.0) && (dbarr[i] > 30.0))
+        {
+            beginF = i;
+            P("begin frame is %d\n", i);
+        }
+
+        if ((dbarr[i-1] > 21.0) && (dbarr[i] < 20.0))
+        {
+            endF = i - 1;
+            P("end frame is %d\n", i-1);
+        }
+    }
+    //update information
+    npts = endF - beginF + 1;
+    P("npts is now %d\n",npts);
+    tl = npts * dt;
+    float * cmagold = cmag;
+    float * dfrold = dfr;
+    cmag = (float*)calloc(npts * nhar1, sizeof(float));
+    dfr = (float*)calloc(npts * nhar1, sizeof(float));
+    int j = 0;
+    for (i = beginF; i < endF + 1; i++)
+    {
+        cmag[j] = cmagold[i];
+        dfr[j] = dfrold[i];
+        j++;
+    }
+    //
+}
+
 void findattackdecay(int *attackf, int *decayf)
 {
     //calculate the attack and decay
@@ -158,20 +206,21 @@ void findattackdecay(int *attackf, int *decayf)
     //original no. of frames
     int i = 0;
     float* dbarr = (float*)calloc(npts+1, sizeof(float));
+    P("npts in findattackdecay is %d\n",npts);
     float sumdb = 0;
     int npts_nonzero = 0;
     for (i = 0; i < npts; i++)
     {
-        if (i < 10)
-        {
-            P("the first 0 harmonic in frame %d, %f\n",i, cmag[i * nhar1]);
-        }
+        // if (i < 10)
+        // {
+        //     P("the first 0 harmonic in frame %d, %f\n",i, cmag[i * nhar1]);
+        // }
 
         dbarr[i] = 20.*log10f(cmag[i * nhar1]);
         sumdb += dbarr[i];
-        if (dbarr[i] > 17.0) npts_nonzero += 1;
+        //if (dbarr[i] > 17.0) npts_nonzero += 1;
     }
-    float avgdb = sumdb/npts_nonzero;
+    float avgdb = sumdb/npts;
     P("db average = %.1f\n",avgdb);
 
     //first pass calculation
@@ -202,11 +251,15 @@ float blend(float x)
     return x;
 }
 
-void reddursyn(float length, float origDur)
+void reddursyn(float length, float origDur, float attackt, float decayt)
 {
     float x,w;
-    int attackf, decayf;
-    findattackdecay(&attackf, &decayf);
+    // int attackf, decayf;
+    // findattackdecay(&attackf, &decayf);
+    // decayf = decayf - (decayf - attackf) * 0.3;
+    // attackf = attackf + (decayf - attackf) * 0.3;
+    int attackf = attackt / dt;
+    int decayf = decayt / dt;
     int nptsnew = length/dt;
     P("nptsnew: %d\n", nptsnew);
     int overlapF = nptsnew - attackf - (npts - decayf);
@@ -220,7 +273,7 @@ void reddursyn(float length, float origDur)
 
     cmag = (float*)calloc(nptsnew * nhar1, sizeof(float));
     dfr = (float*)calloc(nptsnew * nhar1, sizeof(float));
-    P ("the size of cmag and dfr is %d", nptsnew * nhar1);
+    P ("the size of cmag and dfr is %d\n", nptsnew * nhar1);
 
     int i, j, k, narg1, narg2;
     // beginning to attackf
@@ -248,7 +301,7 @@ void reddursyn(float length, float origDur)
             narg1 = k + j * nhar1;
             narg2 = k + (j + shiftF) * nhar1;
             cmag[k + i * nhar1] = (1-w) * cmagold[narg1] + w * cmagold[narg2];
-            dfr[k + i * nhar1] = (1-w) * cmagold[narg1] + w * cmagold[narg2];
+            dfr[k + i * nhar1] = (1-w) * dfrold[narg1] + w * dfrold[narg2];
         }
         i++;
     }
@@ -265,6 +318,16 @@ void reddursyn(float length, float origDur)
     //update parameters for addsyn
     npts = nptsnew;
     tl = length;
+
+    //debug printing
+    for (k = 1; k <= 5; k ++)
+    {
+        for (i = attackf; i < attackf + 20; i++)
+        {
+            narg1 = k + i * nhar1;
+            P("cmag[%d] is %f, dfr[%d] is %f\n", narg1, cmag[narg1], narg1, dfr[narg1]);
+        }
+    }
 }
 
 void extendsyn(char* filname, float length, float extension, int ratio)
