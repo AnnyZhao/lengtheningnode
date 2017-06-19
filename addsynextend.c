@@ -34,7 +34,7 @@ char *gettime(); int getfiltype();
 void cutSilence(float** cmag, float** dfr);
 void calcRMS(float* cmag);
 void extendsyn(char* filname, float length, float extension, int ratio);
-void reddursyn(float length, float origDur, float attackt, float decayt);
+void reddursyn(float length, float origDur);
 void addsyn(char* filnam, int byte_reverse);
 float blend(float x);
 void findattackdecay(int *attackf, int *decayf);
@@ -46,6 +46,7 @@ float *cmag, *dfr, *phase, dt, tl, smax, fs, fa, scalefac;
 
 int main ( int argc, char** argv )
 {
+
     char *anfil, *synfil;
     int byte_reverse = 0;
     if(argc < 3)
@@ -79,7 +80,8 @@ int main ( int argc, char** argv )
         exit(-1);
     }
     P("Analysis data has been read in\n");
-
+    //cutSilence(&cmag, &dfr);
+    P("the number of harmonics is %d, the number of frames is %d\n", nhar, npts);
     int attackf, decayf;
     calcRMS(cmag);
 
@@ -108,8 +110,8 @@ int main ( int argc, char** argv )
 
     if (totalt > origDur)
     {
-        decayf = decayf - (decayf - attackf) * 0.3;
-        attackf = attackf + (decayf - attackf) * 0.3;
+        decayf = decayf - (decayf - attackf) * 0.43;
+        attackf = attackf + (decayf - attackf) * 0.43;
         float mduration = (decayf - attackf) * dt;
         P("mduration is %f\n", mduration);
         extendt = totalt - origDur;
@@ -124,13 +126,11 @@ int main ( int argc, char** argv )
     {
         int f1, f2;
         float t1, t2;
-        P("Give overlapping time: ");			    /* jwb 02/03/17 */
-        scanf("%f %f", &t1, &t2);
-        reddursyn(totalt, origDur,t1,t2);
+        reddursyn(totalt, origDur);
         P("the reduction is done\n");
     }
 
-    cutSilence(&cmag, &dfr);
+
     /*  resynthesize tone at sample rate fs */
     P("Begin synthesis\n");
     addsyn(synfil, byte_reverse);				    /* jwb 12/06/99 */
@@ -255,15 +255,13 @@ float blend(float x)
     return x;
 }
 
-void reddursyn(float length, float origDur, float attackt, float decayt)
+void reddursyn(float length, float origDur)
 {
     float x,w;
-    // int attackf, decayf;
-    // findattackdecay(&attackf, &decayf);
+    int attackf, decayf;
+    findattackdecay(&attackf, &decayf);
     // decayf = decayf - (decayf - attackf) * 0.3;
     // attackf = attackf + (decayf - attackf) * 0.3;
-    int attackf = attackt / dt;
-    int decayf = decayt / dt;
     int nptsnew = length/dt;
     P("nptsnew: %d\n", nptsnew);
     int overlapF = nptsnew - attackf - (npts - decayf);
@@ -339,8 +337,8 @@ void extendsyn(char* filname, float length, float extension, int ratio)
     int i = 0;
     int attackf, decayf;
     findattackdecay(&attackf, &decayf);
-    decayf = decayf - (decayf - attackf) * 0.3;
-    attackf = attackf + (decayf - attackf) * 0.3;
+    decayf = decayf - (decayf - attackf) * 0.43;
+    attackf = attackf + (decayf - attackf) * 0.43;
     //
     float* cmagold = cmag;
     float* dfrold = dfr;

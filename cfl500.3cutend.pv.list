@@ -1,0 +1,104 @@
+Phase vocoder short-time Fourier analysis computation:
+
+Header file cfl500.3cutend.pv.head opened
+open input sample file cfl500.3cutend.wav
+input file type is wav
+Create analysis data output file cfl500.3cutend.pv.an
+
+header data read in
+Performer is Camilla Hoitenga
+Instrument is a flute
+Recorded on 9/18/95
+Pitch played is C5
+Dynamic level is ff
+Vibrato used: NO
+File contains all of tone
+Analysis format is: simple
+Signal sample rate is: 22050
+No. of channels is 1
+Comments: 
+C5, ff flute tone played by Camilla Hoitenga, recorded in UIUC CMP on 9/18/95
+Analysis fund. freq.is 523.0 Hz
+Number of harmonics kept in analysis is 21
+Length of FFT used in analysis is 128
+Time between analysis frames is 0.000956 seconds
+Analysis interp. factor is 1.518005
+Analysis begun at Sat Jun 17 15:20:58 CDT 2017
+
+write header to output file  ...completed
+Load Hamming window
+
+Start processing input samples
+Load initial sample values (frame 0)
+Window and rotate data
+Do Fourier transform
+
+Write initial phase data for 21 harmonics
+
+Compute and write spectrum data to output file
+write frame 0, t =   0.000, a1 = 26.0, df1 = -34.695
+write frame 50, t =   0.048, a1 = 557.4, df1 = 5.245
+write frame 100, t =   0.096, a1 = 927.2, df1 = 4.660
+write frame 150, t =   0.143, a1 = 1236.1, df1 = 7.394
+write frame 200, t =   0.191, a1 = 1322.6, df1 = 9.106
+write frame 250, t =   0.239, a1 = 1686.0, df1 = 7.696
+write frame 300, t =   0.287, a1 = 1645.2, df1 = 9.501
+write frame 350, t =   0.335, a1 = 1735.4, df1 = 8.595
+write frame 400, t =   0.382, a1 = 1750.6, df1 = 7.732
+write frame 450, t =   0.430, a1 = 1767.4, df1 = 11.356
+write frame 500, t =   0.478, a1 = 1778.4, df1 = 8.342
+write frame 550, t =   0.526, a1 = 1804.4, df1 = 11.789
+write frame 600, t =   0.574, a1 = 1677.6, df1 = 6.297
+write frame 650, t =   0.621, a1 = 1777.9, df1 = 11.839
+write frame 700, t =   0.669, a1 = 1753.8, df1 = 6.958
+write frame 750, t =   0.717, a1 = 1727.2, df1 = 9.848
+write frame 800, t =   0.765, a1 = 1815.3, df1 = 6.418
+write frame 850, t =   0.813, a1 = 1742.8, df1 = 9.863
+write frame 900, t =   0.860, a1 = 1734.4, df1 = 9.467
+write frame 950, t =   0.908, a1 = 1748.9, df1 = 5.395
+write frame 1000, t =   0.956, a1 = 1747.7, df1 = 12.922
+write frame 1050, t =   1.004, a1 = 1772.3, df1 = 9.333
+write frame 1100, t =   1.052, a1 = 1660.8, df1 = 10.067
+write frame 1150, t =   1.099, a1 = 1797.6, df1 = 3.979
+write frame 1200, t =   1.147, a1 = 1666.5, df1 = 6.768
+write frame 1250, t =   1.195, a1 = 1748.0, df1 = 12.480
+write frame 1300, t =   1.243, a1 = 1666.3, df1 = 4.909
+write frame 1350, t =   1.291, a1 = 1588.7, df1 = 10.498
+write frame 1400, t =   1.338, a1 = 1631.9, df1 = 6.966
+write frame 1450, t =   1.386, a1 = 1654.1, df1 = 5.274
+write frame 1500, t =   1.434, a1 = 1632.9, df1 = 10.389
+write frame 1550, t =   1.482, a1 = 1546.2, df1 = 4.666
+write frame 1600, t =   1.530, a1 = 1219.8, df1 = 5.813
+write frame 1650, t =   1.577, a1 = 1166.9, df1 = 8.273
+write frame 1700, t =   1.625, a1 = 1460.5, df1 = 11.328
+write frame 1750, t =   1.673, a1 = 462.1, df1 = 11.160
+write frame 1786, t =   1.707, a1 = 131.4, df1 = -2.748
+
+Final header information written to output file:
+
+Performer is Camilla Hoitenga
+Instrument is a flute
+Recorded on 9/18/95
+Pitch played is C5
+Dynamic level is ff
+Vibrato used: NO
+Duration of tone is 1.7 seconds
+File contains all of tone
+Signal sample rate is 22050 Hz
+No. of channels is 1
+Comments: 
+C5, ff flute tone played by Camilla Hoitenga, recorded in UIUC CMP on 9/18/95
+Analysis format is: simple
+Analysis interp. factor is 1.518005
+Peak value of signal is 5389.034180
+Analysis fund. freq.is 523.0 Hz
+Time between analysis frames is 0.000956 seconds
+Length of FFT used in analysis is 128
+Number of harmonics in analysis is 21
+Number of analysis frames is 1786
+Analysis begun at Sat Jun 17 15:20:58 CDT 2017
+
+Analysis completed at Sat Jun 17 15:20:58 CDT 2017. 
+cputime: 0.0, systime: 0.0, totaltime: 0.1 sec 
+
+Data written to file cfl500.3cutend.pv.an

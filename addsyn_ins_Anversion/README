@@ -1,0 +1,11 @@
+		M4C Additive Synthesis Instrument
+
+m4c.as allows additive synthesis based on amplitude/ frequency files produced
+by the SNDAN analysis/synthesis package. The only parameters are the name of
+the file (enclosed in quotes), the pitch (in Oct.pitch units), an amplitude
+scale factor, and lfrac, the fraction in the left speaker for stereo jobs.
+
+This allows one to perform sound files with variable pitch independent of 
+duration or with variable duration independent of pitch.
+
+To make this instrument and a test sound file, type 'make all'.

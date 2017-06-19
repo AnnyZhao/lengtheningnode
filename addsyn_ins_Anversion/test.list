@@ -1,0 +1,51 @@
+[Begin Initialization]
+	Output file is "test.wav" with short int (16-bit) samples.
+
+	Input score file is "test.sc"
+Output sample file test.wav opened.
+WAVE header written to output file.
+	Sampling Rate =   22050/sec
+	No. Channels  = 1
+Init array function generator with name Array
+Init Fourier function generator with name Fourfun
+Init linseg function generator with name Linsegfun
+Init splinseg function generator with name Splinsegfun
+Init Nonlinear Processor function generator with name Nlpfun
+[Initialization Successful]
+
+[Pass-1]
+[Pass 1 Successful]
+[Pass-2]
+[Pass 2 Successful]
+[Pass-3]
+Read file tenor.mq.an 
+Date Recorded: 1981
+Instrument is tenor voice
+Analysis frequency = 192.0 Hz
+Time between frames = 0.00580 sec
+Analysis format is type compact
+Number of analysis frames is 528
+Number of harmonics per frame = 48
+Duration of sound is 3.065
+
+Type : compact
+
+Add syn of file tenor.mq.an at start_time = 0.000, duration = 5.000
+pitch = 7.070, ampscale= 1.000
+original sound duration is 3.065 sec:
+pt1
+pt2
+pt3
+pt4
+npts in findattackdecay is 528
+db average = -inf
+npts=528
+pt5
+pt6
+dt is 0.005805
+attackt is 0.139320 and decayt is -9211471.000000
+minimum duration is 9211474.000
+pt7
+mduration is -4513621.000000
+extendt is 1.934966
+ratio is 0

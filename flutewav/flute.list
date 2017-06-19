@@ -1,0 +1,90 @@
+[Begin Initialization]
+	Output file is "flute.wav" with short int (16-bit) samples.
+
+	Input score file is "flute.sc"
+Output sample file flute.wav opened.
+WAVE header written to output file.
+	Sampling Rate =   22050/sec
+	No. Channels  = 1
+Init array function generator with name Array
+Init Fourier function generator with name Fourfun
+Init linseg function generator with name Linsegfun
+Init splinseg function generator with name Splinsegfun
+Init Nonlinear Processor function generator with name Nlpfun
+[Initialization Successful]
+
+[Pass-1]
+[Pass 1 Successful]
+[Pass-2]
+[Pass 2 Successful]
+[Pass-3]
+At time 0.000 play sound file cfl400.3.wav for 1.000 seconds (22050 samples)
+pitch_trans=0.0000, ampscale=1.0000, lfrac=0.000000
+open file cfl400.3.wav, type = short int with WAVE header, bytes/samp = 2, headsize = 44
+no. samps = 57693
+filename = cfl400.3.wav  sample rate = 22050, no. chans = 1, sound duration = 2.616
+
+close file cfl400.3.wav (fd=8) at time 1.000
+
+At time 1.000 play sound file cfl400.3.wav for 2.000 seconds (44100 samples)
+pitch_trans=0.0200, ampscale=1.0000, lfrac=0.000000
+open file cfl400.3.wav, type = short int with WAVE header, bytes/samp = 2, headsize = 44
+no. samps = 57693
+filename = cfl400.3.wav  sample rate = 22050, no. chans = 1, sound duration = 2.616
+
+At time 2.000 play sound file cfl400.3.wav for 3.000 seconds (66150 samples)
+pitch_trans=0.0400, ampscale=1.0000, lfrac=0.000000
+open file cfl400.3.wav, type = short int with WAVE header, bytes/samp = 2, headsize = 44
+no. samps = 57693
+filename = cfl400.3.wav  sample rate = 22050, no. chans = 1, sound duration = 2.616
+
+close file cfl400.3.wav (fd=8) at time 3.244
+
+At time 3.000 play sound file cfl400.3.wav for 4.000 seconds (88200 samples)
+pitch_trans=0.0500, ampscale=1.0000, lfrac=0.000000
+open file cfl400.3.wav, type = short int with WAVE header, bytes/samp = 2, headsize = 44
+no. samps = 57693
+filename = cfl400.3.wav  sample rate = 22050, no. chans = 1, sound duration = 2.616
+
+At time 4.000 play sound file cfl400.3.wav for 5.000 seconds (110250 samples)
+pitch_trans=0.0700, ampscale=1.0000, lfrac=0.000000
+open file cfl400.3.wav, type = short int with WAVE header, bytes/samp = 2, headsize = 44
+no. samps = 57693
+filename = cfl400.3.wav  sample rate = 22050, no. chans = 1, sound duration = 2.616
+
+close file cfl400.3.wav (fd=9) at time 4.616
+
+close file cfl400.3.wav (fd=8) at time 5.616
+
+At time 5.000 play sound file cfl400.3.wav for 6.000 seconds (132300 samples)
+pitch_trans=0.0900, ampscale=1.0000, lfrac=0.000000
+open file cfl400.3.wav, type = short int with WAVE header, bytes/samp = 2, headsize = 44
+no. samps = 57693
+filename = cfl400.3.wav  sample rate = 22050, no. chans = 1, sound duration = 2.616
+
+close file cfl400.3.wav (fd=10) at time 6.616
+
+At time 6.000 play sound file cfl400.3.wav for 7.000 seconds (154350 samples)
+pitch_trans=0.1100, ampscale=1.0000, lfrac=0.000000
+open file cfl400.3.wav, type = short int with WAVE header, bytes/samp = 2, headsize = 44
+no. samps = 57693
+filename = cfl400.3.wav  sample rate = 22050, no. chans = 1, sound duration = 2.616
+
+close file cfl400.3.wav (fd=8) at time 7.616
+
+At time 7.000 play sound file cfl400.3.wav for 8.000 seconds (176400 samples)
+pitch_trans=1.0000, ampscale=1.0000, lfrac=0.000000
+open file cfl400.3.wav, type = short int with WAVE header, bytes/samp = 2, headsize = 44
+no. samps = 57693
+filename = cfl400.3.wav  sample rate = 22050, no. chans = 1, sound duration = 2.616
+
+close file cfl400.3.wav (fd=9) at time 8.616
+
+close file cfl400.3.wav (fd=8) at time 9.616
+
+	Peak values for channels:
+	[1] =   3169.730
+	End of Performance.
+	Total Time = 15.00, Section Time = 15.00
+[Pass 3 Successful]
+[Job Complete]

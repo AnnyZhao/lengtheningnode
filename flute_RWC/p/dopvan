@@ -1,0 +1,21 @@
+#!/bin/csh -f
+touch logfile
+set perform = "RWC"
+set instru = "flute"
+set date = "2002"
+set vib = "no"
+set portion = "all"
+set comment = "Selmer tone downloaded from RWC Music Database (2007)"
+foreach file (*.wav)
+  set fbase = `basename $file wav`
+  set pitch = `getpitch $file`
+  set dynam = `getdynam $file`
+  set freq = `getfreq $file`
+  echo "start analysis of $file" 
+  echo "" >> logfile
+  echo "Start phase vocoder analysis of $file" >> logfile
+
+  makeheader {$fbase}pv.head "$perform" "$instru" "$date" "$pitch" \
+	      "$dynam" "$vib" "$portion" "$comment" >>& logfile
+  pvan $freq {$fbase}pv.head $file {$fbase}pv.an >>& logfile
+end

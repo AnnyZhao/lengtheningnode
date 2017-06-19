@@ -1,0 +1,24 @@
+flute sound files
+
+instrument manufacturer: Louis Lot
+
+dynamic: m  (mezzo)
+
+articulation: normal
+
+pitch range: C4 to C7 (262 to 2093 Hz)
+
+No. notes: 37 
+
+File name convention:  rflwxy.z, 
+   where  rfl = RWC flute
+   w = octave (e.g., 3, for 3rd octave)
+   xy = note within octave (e.g., xy = 06 refers to F#)
+   z = dynamic, where 1 = soft, 2 = medium, 3 = loud
+
+File durations: min = 3.4 s, max = 4.7 s
+
+sample rate: 44100 Hz
+
+no. channels: 1
+

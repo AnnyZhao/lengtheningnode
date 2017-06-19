@@ -109,7 +109,7 @@ int main(int argc, char** argv)
       //     P("times %f \n", times[i]);
       // }
     }
-//  plotSamples(sr, sampN, times, samplesfloat);
+  plotSamples(sr, sampN, times, samplesfloat);
 
 //  calculation of rms array
     i = 0;
@@ -124,7 +124,8 @@ int main(int argc, char** argv)
       //
       // }
     }
-//  plotSamples(sr, nwindow, windowidx, rmsar);
+  //plotSamples(sr, nwindow, windowidx, rmsar);
+  plotseg(windowidx,rmsar,nwindow, "Time(sec)", "RMS");
 //  convert rms array to dB units and compute average dB value
     float* dbarr = (float*)calloc(nwindow, sizeof(float));
     i = 0;
@@ -137,7 +138,7 @@ int main(int argc, char** argv)
     }
     float avgdb = sumdb/nwindow;
     P("db average = %.1f\n", avgdb);
-//  plotseg(windowidx,dbarr,nwindow, "Time(sec)","dB");
+    plotseg(windowidx,dbarr,nwindow, "Time(sec)","dB");
 
 //  compute attack and decay frames
 //  first pass calculation:
