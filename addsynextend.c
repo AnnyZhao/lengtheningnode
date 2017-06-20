@@ -82,8 +82,17 @@ int main ( int argc, char** argv )
     P("Analysis data has been read in\n");
     //cutSilence(&cmag, &dfr);
     P("the number of harmonics is %d, the number of frames is %d\n", nhar, npts);
+    int aa;
+    for (aa = 0; aa < 10; aa++)
+    {
+        P("0th harmonic value for frame %d is %f\n", aa, cmag[aa * nhar1]);
+    }
     int attackf, decayf;
     calcRMS(cmag);
+    for (aa = 0; aa < 10; aa++)
+    {
+        P("0th harmonic value for frame %d is %f\n", aa, cmag[aa * nhar1]);
+    }
 
     float origDur = tl;
     P("original sound duration is %.3f sec:\n", origDur);

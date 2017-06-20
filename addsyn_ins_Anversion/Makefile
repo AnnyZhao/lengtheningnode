@@ -3,7 +3,7 @@
 #
 #  06/05/12 jwb Modified for OSX 10.6 installation
 
-CFLAGS = -O -arch i386 -c
+CFLAGS = -g -arch i386 -c
 
 all: test.wav
 

@@ -51,6 +51,10 @@ void findattackdecay(int *attackf, int *decayf)
         // }
 
         dbarr[i] = 20.*log10f(cmag[i * nhar1]);
+        if (dbarr[i] <= 0)
+        {
+            dbarr[i] = 0.0;
+        }
         sumdb += dbarr[i];
         //if (dbarr[i] > 17.0) npts_nonzero += 1;
     }
@@ -283,6 +287,7 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
             (*dfr)[k + i * nhar1] = dfrold[k + j * nhar1];
         }
         i++;
+        if (i >= nptsnew) break;
     }
 
     npts = nptsnew;

@@ -30,7 +30,7 @@ Duration of sound is 3.065
 
 Type : compact
 
-Add syn of file tenor.mq.an at start_time = 0.000, duration = 5.000
+Add syn of file tenor.mq.an at start_time = 0.000, duration = 8.000
 pitch = 7.070, ampscale= 1.000
 original sound duration is 3.065 sec:
 pt1
@@ -38,14 +38,45 @@ pt2
 pt3
 pt4
 npts in findattackdecay is 528
-db average = -inf
+db average = 75.4
 npts=528
+attack frame is 15
+decay frame is 421
+decay frame is 426
+decay frame is 439
+decay frame is 454
+decay frame is 466
+decay frame is 499
 pt5
 pt6
 dt is 0.005805
-attackt is 0.139320 and decayt is -9211471.000000
-minimum duration is 9211474.000
+attackt is 0.087075 and decayt is 2.896689
+minimum duration is 0.255
 pt7
-mduration is -4513621.000000
-extendt is 1.934966
-ratio is 0
+mduration is 1.375782
+extendt is 4.934966
+ratio is 3
+npts in findattackdecay is 528
+db average = 75.4
+npts=528
+attack frame is 15
+decay frame is 421
+decay frame is 426
+decay frame is 439
+decay frame is 454
+decay frame is 466
+decay frame is 499
+nptsnew: 1378
+number of full loops: 1
+mduration is 1.375782
+final loop time is 2.183402
+the reversef is 164
+the extension is done
+dxi: 0.007806
+Complete addsyn setup
+	Peak values for channels:
+	[1] =  18052.131
+	End of Performance.
+	Total Time =  8.00, Section Time =  8.00
+[Pass 3 Successful]
+[Job Complete]
