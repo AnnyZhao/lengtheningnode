@@ -52,7 +52,7 @@ void findattackdecay(int *attackf, int *decayf)
         dbarr[i] = 20.*log10f(cmag[i * nhar1]);
         if (dbarr[i] <= 0)
         {
-            dbarr[i] = 0.0;
+            dbarr[i] = 0.0001;
         }
         sumdb += dbarr[i];
         //if (dbarr[i] > 17.0) npts_nonzero += 1;
@@ -212,23 +212,84 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
     findattackdecay(&attackf, &decayf);
     decayf = decayf - (decayf - attackf) * 0.3;
     attackf = attackf + (decayf - attackf) * 0.3;
-    //
-    float* cmagold = *cmag;
-    float* dfrold = *dfr;
+    float mduration = (decayf - attackf) * dt;
+
     int nptsnew = length/dt;
     P("nptsnew: %d\n", nptsnew);
+
+    float* cmagold = *cmag;
+    float* dfrold = *dfr;
+    // calculate and interpolate amplitude variation
+    float* dboriginal = (float*) calloc(npts, sizeof(float));
+    float* dbscalefactor = (float*) calloc(npts, sizeof(float));
+    float* dbnew = (float*) calloc(nptsnew, sizeof(float));
+    float* dbnewscalefactor = (float*) calloc(nptsnew, sizeof(float));
+    for (i = 0; i < npts; i++)
+    {
+        dboriginal[i] = 20. * log10((*cmag)[i * nhar1]);
+        if (dboriginal[i] <= 0)
+        {
+            dboriginal[i] = 0.0001;
+        }
+    }
+    for (i = 0; i < npts; i++)
+    {
+        dbscalefactor[i] = dboriginal[attackf] - dboriginal[i];
+    }
+    for (i = 0; i < nptsnew; i++)
+    {
+        int intoSustain = i - attackf;
+        if (intoSustain <= 0)
+        {
+            dbnew[i] = dboriginal[i];
+        }
+        else if ((i - (nptsnew - npts)) >= decayf)
+        {
+            dbnew[i] = dboriginal[i - (nptsnew - npts)];
+        }
+        else
+        {
+            int a = floor((((float) i) - attackf) / ratio) + attackf;
+            int b = ceil((((float) i) - attackf) / ratio) + attackf;
+            float percentage = ((((float) i) - attackf) / ratio) + attackf - a;
+            if (b >= npts)
+            {
+                b = npts - 1;
+            }
+            dbnew[i] = dboriginal[a] * percentage + dboriginal[b] * (1 - percentage);
+            if (dbnew[i] <= 0)
+            {
+                dbnew[i] = 0.0001;
+            }
+        }
+    }
+    for (i = 0; i < nptsnew; i++)
+    {
+        dbnewscalefactor[i] = dbnew[attackf] - dbnew[i];
+    }
+    free(dboriginal);
+    dboriginal = NULL;
+
     *cmag = (float*)calloc(nptsnew * nhar1, sizeof(float));
     *dfr = (float*)calloc(nptsnew * nhar1, sizeof(float));
+
     int fullloop;
     fullloop = ratio / 2;
-    P("number of full loops: %d\n",fullloop);
+    P("number of full loops: %d\n", fullloop);
     // first beginning to decayf
     int j,k;
     for (i = 0; i < decayf; i++)
     {
         for (k = 1; k < nhar1; k++)
         {
-            (*cmag)[k + i * nhar1] = cmagold[k + i * nhar1];
+            if (i <= attackf)
+            {
+                (*cmag)[k + i * nhar1] = cmagold[k + i * nhar1];
+            }
+            else
+            {
+                (*cmag)[k + i * nhar1] = pow(10.0, ((20.0 * log10(cmagold[k + i * nhar1]) + dbscalefactor[i] - dbnewscalefactor[i]) / 20.0));
+            }
             (*dfr)[k + i * nhar1] = dfrold[k + i * nhar1];
         }
     }
@@ -241,7 +302,7 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
         {
             for (k = 1; k < nhar1; k++)
             {
-                (*cmag)[k + i * nhar1] = cmagold[k + j * nhar1];
+                (*cmag)[k + i * nhar1] = pow(10.0, ((20.0 * log10(cmagold[k + j * nhar1]) + dbscalefactor[j] - dbnewscalefactor[i]) / 20.0));
                 (*dfr)[k + i * nhar1] = dfrold[k + j * nhar1];
             }
             i++;
@@ -251,7 +312,7 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
         {
             for (k = 1; k < nhar1; k++)
             {
-                (*cmag)[k + i * nhar1] = cmagold[k + j * nhar1];
+                (*cmag)[k + i * nhar1] = pow(10.0, ((20.0 * log10(cmagold[k + j * nhar1]) + dbscalefactor[j] - dbnewscalefactor[i]) / 20.0));
                 (*dfr)[k + i * nhar1] = dfrold[k + j * nhar1];
             }
             i++;
@@ -260,7 +321,6 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
     }
 
     //last round, decay to reverse to end
-    float mduration = (decayf - attackf) * dt;
     P("mduration is %f\n", mduration);
     float finalLoopT = extension - fullloop * mduration * 2;
     P ("final loop time is %f\n", finalLoopT);

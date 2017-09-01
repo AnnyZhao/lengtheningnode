@@ -178,7 +178,7 @@ if (DUR > origDur)
     P("extendt is %f\n", extendt);
     fflush(stdout);
     ratio = extendt / mduration;
-    P("ratio is %d\n",ratio);
+    P("ratio is %d\n", ratio);
     fflush(stdout);
     extendsyn(&cmagi, &dfri, nhar1, DUR, extendt, ratio);
     P("the extension is done\n");
