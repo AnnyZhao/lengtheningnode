@@ -287,7 +287,8 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
             (*dfr)[k + i * nhar1] = dfrold[k + j * nhar1];
         }
         i++;
-        if (i >= nptsnew) break;
+        if (i >= nptsnew)
+            break;
     }
 
     npts = nptsnew;

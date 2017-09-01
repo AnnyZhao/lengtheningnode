@@ -1,0 +1,161 @@
+Phase vocoder short-time Fourier analysis computation:
+
+Header file cfl600.3_ampedited.pv.head opened
+open input sample file cfl600.3_ampedited.wav
+input file type is wav
+Create analysis data output file cfl600.3_ampedited.pv.an
+
+header data read in
+Performer is 
+Instrument is a 
+Recorded on 
+Pitch played is 
+Dynamic level is 
+Vibrato used: 
+File contains  of tone
+Analysis format is: simple
+Signal sample rate is: 22050
+No. of channels is 1
+Comments: 
+ 
+Analysis fund. freq.is 1046.5 Hz
+Number of harmonics kept in analysis is 10
+Length of FFT used in analysis is 64
+Time between analysis frames is 0.000478 seconds
+Analysis interp. factor is 1.518730
+Analysis begun at Thu Aug 31 21:23:24 CDT 2017
+
+write header to output file  ...completed
+Load Hamming window
+
+Start processing input samples
+Load initial sample values (frame 0)
+Window and rotate data
+Do Fourier transform
+
+Write initial phase data for 10 harmonics
+
+Compute and write spectrum data to output file
+write frame 0, t =   0.000, a1 = 1.3, df1 = -516.509
+write frame 50, t =   0.024, a1 = 0.6, df1 = -785.960
+write frame 100, t =   0.048, a1 = 1.2, df1 = -436.088
+write frame 150, t =   0.072, a1 = 1.3, df1 = -503.769
+write frame 200, t =   0.096, a1 = 1.3, df1 = 571.241
+write frame 250, t =   0.119, a1 = 0.8, df1 = -50.866
+write frame 300, t =   0.143, a1 = 0.6, df1 = -306.825
+write frame 350, t =   0.167, a1 = 0.8, df1 = -538.355
+write frame 400, t =   0.191, a1 = 0.3, df1 = -12.367
+write frame 450, t =   0.215, a1 = 43.9, df1 = -72.654
+write frame 500, t =   0.239, a1 = 185.5, df1 = -4.117
+write frame 550, t =   0.263, a1 = 1367.4, df1 = 21.380
+write frame 600, t =   0.287, a1 = 3281.9, df1 = 12.295
+write frame 650, t =   0.311, a1 = 3810.7, df1 = 10.148
+write frame 700, t =   0.334, a1 = 3865.4, df1 = 11.921
+write frame 750, t =   0.358, a1 = 4451.1, df1 = 16.406
+write frame 800, t =   0.382, a1 = 4419.2, df1 = 19.009
+write frame 850, t =   0.406, a1 = 4064.4, df1 = 18.866
+write frame 900, t =   0.430, a1 = 3861.7, df1 = 16.291
+write frame 950, t =   0.454, a1 = 3875.2, df1 = 13.849
+write frame 1000, t =   0.478, a1 = 3896.7, df1 = 5.534
+write frame 1050, t =   0.502, a1 = 3752.6, df1 = 18.395
+write frame 1100, t =   0.526, a1 = 4111.8, df1 = 18.510
+write frame 1150, t =   0.549, a1 = 4222.4, df1 = 24.205
+write frame 1200, t =   0.573, a1 = 4168.6, df1 = 16.746
+write frame 1250, t =   0.597, a1 = 4038.6, df1 = 23.420
+write frame 1300, t =   0.621, a1 = 4018.1, df1 = 23.323
+write frame 1350, t =   0.645, a1 = 3783.1, df1 = 22.745
+write frame 1400, t =   0.669, a1 = 3478.0, df1 = 17.557
+write frame 1450, t =   0.693, a1 = 3174.8, df1 = 17.780
+write frame 1500, t =   0.717, a1 = 3021.5, df1 = 10.353
+write frame 1550, t =   0.741, a1 = 3178.8, df1 = 17.911
+write frame 1600, t =   0.764, a1 = 3194.1, df1 = 18.239
+write frame 1650, t =   0.788, a1 = 3035.3, df1 = 27.214
+write frame 1700, t =   0.812, a1 = 2873.0, df1 = 11.817
+write frame 1750, t =   0.836, a1 = 2873.0, df1 = 26.186
+write frame 1800, t =   0.860, a1 = 3242.1, df1 = 24.644
+write frame 1850, t =   0.884, a1 = 3186.7, df1 = 28.126
+write frame 1900, t =   0.908, a1 = 2885.2, df1 = 21.690
+write frame 1950, t =   0.932, a1 = 2534.6, df1 = 22.755
+write frame 2000, t =   0.956, a1 = 2319.6, df1 = 28.278
+write frame 2050, t =   0.979, a1 = 2276.9, df1 = 20.505
+write frame 2100, t =   1.003, a1 = 2281.9, df1 = 24.998
+write frame 2150, t =   1.027, a1 = 2158.1, df1 = 28.567
+write frame 2200, t =   1.051, a1 = 2189.0, df1 = 23.738
+write frame 2250, t =   1.075, a1 = 2166.8, df1 = 22.551
+write frame 2300, t =   1.099, a1 = 2141.6, df1 = 21.183
+write frame 2350, t =   1.123, a1 = 2011.0, df1 = 21.304
+write frame 2400, t =   1.147, a1 = 1867.2, df1 = 24.423
+write frame 2450, t =   1.171, a1 = 1707.2, df1 = 20.355
+write frame 2500, t =   1.194, a1 = 1681.4, df1 = 19.257
+write frame 2550, t =   1.218, a1 = 1506.6, df1 = 19.492
+write frame 2600, t =   1.242, a1 = 1444.4, df1 = 19.231
+write frame 2650, t =   1.266, a1 = 1398.4, df1 = 21.185
+write frame 2700, t =   1.290, a1 = 1391.4, df1 = 23.390
+write frame 2750, t =   1.314, a1 = 1382.1, df1 = 23.360
+write frame 2800, t =   1.338, a1 = 1385.9, df1 = 23.898
+write frame 2850, t =   1.362, a1 = 1275.6, df1 = 24.148
+write frame 2900, t =   1.386, a1 = 1206.9, df1 = 28.017
+write frame 2950, t =   1.409, a1 = 1150.1, df1 = 23.616
+write frame 3000, t =   1.433, a1 = 1014.8, df1 = 21.673
+write frame 3050, t =   1.457, a1 = 910.1, df1 = 15.493
+write frame 3100, t =   1.481, a1 = 818.4, df1 = 15.776
+write frame 3150, t =   1.505, a1 = 776.2, df1 = 21.420
+write frame 3200, t =   1.529, a1 = 768.5, df1 = 18.356
+write frame 3250, t =   1.553, a1 = 770.3, df1 = 22.199
+write frame 3300, t =   1.577, a1 = 738.7, df1 = 30.969
+write frame 3350, t =   1.601, a1 = 681.8, df1 = 28.920
+write frame 3400, t =   1.624, a1 = 592.4, df1 = 28.652
+write frame 3450, t =   1.648, a1 = 599.1, df1 = 24.482
+write frame 3500, t =   1.672, a1 = 558.8, df1 = 21.425
+write frame 3550, t =   1.696, a1 = 387.6, df1 = 17.228
+write frame 3600, t =   1.720, a1 = 331.8, df1 = 17.560
+write frame 3650, t =   1.744, a1 = 356.9, df1 = 23.964
+write frame 3700, t =   1.768, a1 = 320.1, df1 = 21.061
+write frame 3750, t =   1.792, a1 = 262.9, df1 = 17.924
+write frame 3800, t =   1.816, a1 = 196.1, df1 = 16.710
+write frame 3850, t =   1.839, a1 = 138.7, df1 = 9.835
+write frame 3900, t =   1.863, a1 = 79.9, df1 = 14.178
+write frame 3950, t =   1.887, a1 = 26.5, df1 = 25.402
+write frame 4000, t =   1.911, a1 = 11.1, df1 = 11.431
+write frame 4050, t =   1.935, a1 = 4.6, df1 = 14.169
+write frame 4100, t =   1.959, a1 = 3.0, df1 = 15.718
+write frame 4150, t =   1.983, a1 = 1.1, df1 = 8.285
+write frame 4200, t =   2.007, a1 = 0.5, df1 = 7.785
+write frame 4250, t =   2.031, a1 = 0.3, df1 = -34.364
+write frame 4300, t =   2.054, a1 = 0.2, df1 = -6.275
+write frame 4350, t =   2.078, a1 = 0.1, df1 = -10.977
+write frame 4400, t =   2.102, a1 = 0.0, df1 = -167.815
+write frame 4450, t =   2.126, a1 = 0.0, df1 = -169.387
+write frame 4500, t =   2.150, a1 = 0.0, df1 = -117.404
+write frame 4550, t =   2.174, a1 = 0.0, df1 = -113.926
+write frame 4600, t =   2.198, a1 = 0.0, df1 = -491.134
+write frame 4609, t =   2.202, a1 = 0.1, df1 = -44.601
+
+Final header information written to output file:
+
+Performer is 
+Instrument is a 
+Recorded on 
+Pitch played is 
+Dynamic level is 
+Vibrato used: 
+Duration of tone is 2.2 seconds
+File contains  of tone
+Signal sample rate is 22050 Hz
+No. of channels is 1
+Comments: 
+ 
+Analysis format is: simple
+Analysis interp. factor is 1.518730
+Peak value of signal is 7724.413574
+Analysis fund. freq.is 1046.5 Hz
+Time between analysis frames is 0.000478 seconds
+Length of FFT used in analysis is 64
+Number of harmonics in analysis is 10
+Number of analysis frames is 4609
+Analysis begun at Thu Aug 31 21:23:24 CDT 2017
+
+Analysis completed at Thu Aug 31 21:23:24 CDT 2017. 
+cputime: 0.0, systime: 0.0, totaltime: 0.1 sec 
+
+Data written to file cfl600.3_ampedited.pv.an

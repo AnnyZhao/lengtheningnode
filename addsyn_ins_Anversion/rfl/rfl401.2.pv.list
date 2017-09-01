@@ -1,0 +1,114 @@
+Phase vocoder short-time Fourier analysis computation:
+
+Header file rfl401.2.pv.head opened
+open input sample file rfl401.2.wav
+input file type is wav
+Create analysis data output file rfl401.2.pv.an
+
+header data read in
+Performer is rfl
+Instrument is a flute
+Recorded on jun23
+Pitch played is C#4
+Dynamic level is mf
+Vibrato used: no
+File contains all of tone
+Analysis format is: simple
+Signal sample rate is: 44100
+No. of channels is 1
+Comments: 
+ 
+Analysis fund. freq.is 277.2 Hz
+Number of harmonics kept in analysis is 79
+Length of FFT used in analysis is 512
+Time between analysis frames is 0.001804 seconds
+Analysis interp. factor is 1.609027
+Analysis begun at Fri Jun 23 06:44:33 CDT 2017
+
+write header to output file  ...completed
+Load Hamming window
+
+Start processing input samples
+Load initial sample values (frame 0)
+Window and rotate data
+Do Fourier transform
+
+Write initial phase data for 79 harmonics
+
+Compute and write spectrum data to output file
+write frame 0, t =   0.000, a1 = 258.3, df1 = 83.955
+write frame 50, t =   0.090, a1 = 220.6, df1 = -3.834
+write frame 100, t =   0.180, a1 = 475.6, df1 = -3.462
+write frame 150, t =   0.271, a1 = 585.3, df1 = -1.440
+write frame 200, t =   0.361, a1 = 601.1, df1 = -0.776
+write frame 250, t =   0.451, a1 = 561.1, df1 = 1.279
+write frame 300, t =   0.541, a1 = 522.4, df1 = 0.179
+write frame 350, t =   0.631, a1 = 518.7, df1 = 0.269
+write frame 400, t =   0.722, a1 = 516.8, df1 = 0.032
+write frame 450, t =   0.812, a1 = 494.5, df1 = 1.683
+write frame 500, t =   0.902, a1 = 491.6, df1 = 0.359
+write frame 550, t =   0.992, a1 = 484.5, df1 = 1.123
+write frame 600, t =   1.082, a1 = 478.3, df1 = 0.465
+write frame 650, t =   1.173, a1 = 460.4, df1 = 0.436
+write frame 700, t =   1.263, a1 = 462.1, df1 = 0.561
+write frame 750, t =   1.353, a1 = 463.2, df1 = 0.606
+write frame 800, t =   1.443, a1 = 456.7, df1 = 0.992
+write frame 850, t =   1.533, a1 = 437.5, df1 = 0.888
+write frame 900, t =   1.623, a1 = 449.7, df1 = -0.461
+write frame 950, t =   1.714, a1 = 444.8, df1 = 0.248
+write frame 1000, t =   1.804, a1 = 448.0, df1 = 0.935
+write frame 1050, t =   1.894, a1 = 434.4, df1 = -0.048
+write frame 1100, t =   1.984, a1 = 456.9, df1 = 0.263
+write frame 1150, t =   2.074, a1 = 441.6, df1 = 0.971
+write frame 1200, t =   2.165, a1 = 444.4, df1 = 1.094
+write frame 1250, t =   2.255, a1 = 446.6, df1 = 0.814
+write frame 1300, t =   2.345, a1 = 448.8, df1 = 0.292
+write frame 1350, t =   2.435, a1 = 446.1, df1 = 0.192
+write frame 1400, t =   2.525, a1 = 465.4, df1 = -0.922
+write frame 1450, t =   2.616, a1 = 455.4, df1 = 0.155
+write frame 1500, t =   2.706, a1 = 457.4, df1 = -1.026
+write frame 1550, t =   2.796, a1 = 449.8, df1 = 0.400
+write frame 1600, t =   2.886, a1 = 457.7, df1 = -1.134
+write frame 1650, t =   2.976, a1 = 471.8, df1 = -1.377
+write frame 1700, t =   3.067, a1 = 468.3, df1 = -1.693
+write frame 1750, t =   3.157, a1 = 473.8, df1 = -1.415
+write frame 1800, t =   3.247, a1 = 448.1, df1 = -1.107
+write frame 1850, t =   3.337, a1 = 453.6, df1 = -0.519
+write frame 1900, t =   3.427, a1 = 458.4, df1 = -0.743
+write frame 1950, t =   3.518, a1 = 477.8, df1 = -0.382
+write frame 2000, t =   3.608, a1 = 477.1, df1 = -0.668
+write frame 2050, t =   3.698, a1 = 427.4, df1 = -1.699
+write frame 2100, t =   3.788, a1 = 374.1, df1 = -1.714
+write frame 2150, t =   3.878, a1 = 246.7, df1 = -1.234
+write frame 2200, t =   3.969, a1 = 98.1, df1 = -4.625
+write frame 2250, t =   4.059, a1 = 1264.0, df1 = 81.245
+write frame 2276, t =   4.106, a1 = 87.2, df1 = 70.895
+
+Final header information written to output file:
+
+Performer is rfl
+Instrument is a flute
+Recorded on jun23
+Pitch played is C#4
+Dynamic level is mf
+Vibrato used: no
+Duration of tone is 4.1 seconds
+File contains all of tone
+Signal sample rate is 44100 Hz
+No. of channels is 1
+Comments: 
+ 
+Analysis format is: simple
+Analysis interp. factor is 1.609027
+Peak value of signal is 37763.472656
+Analysis fund. freq.is 277.2 Hz
+Time between analysis frames is 0.001804 seconds
+Length of FFT used in analysis is 512
+Number of harmonics in analysis is 79
+Number of analysis frames is 2276
+Analysis begun at Fri Jun 23 06:44:33 CDT 2017
+
+Analysis completed at Fri Jun 23 06:44:34 CDT 2017. 
+cputime: 0.2, systime: 0.1, totaltime: 0.3 sec 
+
+Data written to file rfl401.2.pv.an

@@ -1,0 +1,7 @@
+Phase vocoder short-time Fourier analysis computation:
+
+Header file rfl410.2.pv.head opened
+open input sample file rfl410.2.wav
+input file type is wav
+Create analysis data output file rfl410.2.pv.an
+Analysis file header is invalid. Abort

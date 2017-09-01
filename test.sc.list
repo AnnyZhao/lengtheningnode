@@ -1,0 +1,8 @@
+[Begin Initialization]
+	Output file is "test.sc.wav" with short int (16-bit) samples.
+
+	Input score file is "test.sc.sc"
+	Line 0, [Fatal] Error opening <test.sc.sc>
+[Found 1 error/warning]
+
+Can't open test.sc.wav for WAVE header update
