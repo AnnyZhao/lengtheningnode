@@ -227,10 +227,6 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
     for (i = 0; i < npts; i++)
     {
         dboriginal[i] = 20. * log10((*cmag)[i * nhar1]);
-        if (dboriginal[i] <= 0)
-        {
-            dboriginal[i] = 0.0001;
-        }
     }
     for (i = 0; i < npts; i++)
     {
@@ -257,10 +253,6 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
                 b = npts - 1;
             }
             dbnew[i] = dboriginal[a] * percentage + dboriginal[b] * (1 - percentage);
-            if (dbnew[i] <= 0)
-            {
-                dbnew[i] = 0.0001;
-            }
         }
     }
     for (i = 0; i < nptsnew; i++)
@@ -288,7 +280,20 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
             }
             else
             {
-                (*cmag)[k + i * nhar1] = pow(10.0, ((20.0 * log10(cmagold[k + i * nhar1]) + dbscalefactor[i] - dbnewscalefactor[i]) / 20.0));
+                float logamplitude = log10(cmagold[k + i * nhar1]);
+                if (isnan(logamplitude))
+                {
+                    logamplitude = -1e5;
+                }
+                float result = pow(10.0, ((20.0 * logamplitude + dbscalefactor[i] - dbnewscalefactor[i]) / 20.0));
+                if (isnan(result))
+                {
+                    (*cmag)[k + i * nhar1] = cmagold[k + i * nhar1];
+                }
+                else
+                {
+                    (*cmag)[k + i * nhar1] = result;
+                }
             }
             (*dfr)[k + i * nhar1] = dfrold[k + i * nhar1];
         }
@@ -302,7 +307,12 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
         {
             for (k = 1; k < nhar1; k++)
             {
-                (*cmag)[k + i * nhar1] = pow(10.0, ((20.0 * log10(cmagold[k + j * nhar1]) + dbscalefactor[j] - dbnewscalefactor[i]) / 20.0));
+                float logamplitude = log10(cmagold[k + j * nhar1]);
+                if (isnan(logamplitude))
+                {
+                    logamplitude = -1e5;
+                }
+                (*cmag)[k + i * nhar1] = pow(10.0, ((20.0 * logamplitude + dbscalefactor[j] - dbnewscalefactor[i]) / 20.0));
                 (*dfr)[k + i * nhar1] = dfrold[k + j * nhar1];
             }
             i++;
@@ -312,7 +322,12 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
         {
             for (k = 1; k < nhar1; k++)
             {
-                (*cmag)[k + i * nhar1] = pow(10.0, ((20.0 * log10(cmagold[k + j * nhar1]) + dbscalefactor[j] - dbnewscalefactor[i]) / 20.0));
+                float logamplitude = log10(cmagold[k + j * nhar1]);
+                if (isnan(logamplitude))
+                {
+                    logamplitude = -1e5;
+                }
+                (*cmag)[k + i * nhar1] = pow(10.0, ((20.0 * logamplitude + dbscalefactor[j] - dbnewscalefactor[i]) / 20.0));
                 (*dfr)[k + i * nhar1] = dfrold[k + j * nhar1];
             }
             i++;
