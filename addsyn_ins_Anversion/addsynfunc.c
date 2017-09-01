@@ -49,7 +49,6 @@ void findattackdecay(int *attackf, int *decayf)
         // {
         //     P("the first 0 harmonic in frame %d, %f\n",i, cmag[i * nhar1]);
         // }
-
         dbarr[i] = 20.*log10f(cmag[i * nhar1]);
         if (dbarr[i] <= 0)
         {
@@ -67,24 +66,22 @@ void findattackdecay(int *attackf, int *decayf)
     printf("npts=%d\n",npts);
     for (i = 0; i < npts; i++)
     {
-        //printf("i=%d\n",i);
-      firstdiff = seconddiff;
-      seconddiff = dbarr[i] - avgdb;
-      if(seconddiff > 0 && firstdiff < 0)
-      {
-         if (debugattack > i)
-         {
-             *attackf = i;
-             debugattack = i;
-             P("attack frame is %d\n", *attackf);
-         }
-      }
-      if(seconddiff < 0 && firstdiff > 0)
-      {
-         *decayf = i;
-         P("decay frame is %d\n", *decayf);
-      }
-     //printf("i=%d\n",i);
+        firstdiff = seconddiff;
+        seconddiff = dbarr[i] - avgdb;
+        if(seconddiff > 0 && firstdiff < 0)
+        {
+            if (debugattack > i)
+            {
+                *attackf = i;
+                debugattack = i;
+                P("attack frame is %d\n", *attackf);
+            }
+        }
+        if(seconddiff < 0 && firstdiff > 0)
+        {
+            *decayf = i;
+            P("decay frame is %d\n", *decayf);
+        }
     }
 }
 
@@ -134,7 +131,6 @@ void timescalemin(float** Cmag, float** Dfr, int nhar1, float length, float mint
                                                   percentage);
         }
     }
-
     tl = length;
     npts = nptsnew;
 }
