@@ -118,6 +118,8 @@ P("\nAdd syn of file %s at start_time = %.3f, duration = %.3f\n",
     anFile,STIME,DUR);
 P("pitch = %.3f, ampscale= %.3f\n", pch, ascale); fflush(stdout);
 
+float frameDuration = dt;
+
 freq = cpspitch(pch);
 ascalei = ascale;
 sifaci = (FFUN_LEN/SR)*(freq/fa);    /* provides frequency scaling */
@@ -132,35 +134,22 @@ for (k = 1; k < nhar1; k++) {
 float origDur = tl;
 P("original sound duration is %.3f sec:\n", origDur);
 // increment for traversing the cmagi and dfri data
-P("pt1\n");
-fflush(stdout);
 dxi = (npts - 1) / ((float) origDur * SR);
-P("pt2\n");
 fflush(stdout);
 calcRMS(cmag);
-P("pt3\n");
-fflush(stdout);
 int attackf, decayf;
-P("pt4\n");
-fflush(stdout);
 findattackdecay(&attackf, &decayf);
-P("pt5\n");
-fflush(stdout);
 
 float attackt = attackf * dt;
 float decayt = decayf * dt;
-P("pt6\n");
-fflush(stdout);
 P("dt is %f\n", dt);
 P("attackt is %f and decayt is %f\n", attackt, decayt);
-fflush(stdout);
 
 float totalt, extendt;
 totalt = DUR;
-int ratio;
+float ratio;
 float minimumT = attackt + (origDur - decayt);
 P("minimum duration is %.3f\n", minimumT);
-P("pt7\n");
 fflush(stdout);
 
 cmagi = cmag;
@@ -169,8 +158,8 @@ dfri = dfr;
 //extend
 if (DUR > origDur)
 {
-    decayf = decayf - (decayf - attackf) * 0.3;
-    attackf = attackf + (decayf - attackf) * 0.3;
+    decayf = decayf - (decayf - attackf) * 0.05;
+    attackf = attackf + (decayf - attackf) * 0.05;
     float mduration = (decayf - attackf) * dt;
     P("mduration is %f\n", mduration);
     fflush(stdout);
@@ -178,9 +167,9 @@ if (DUR > origDur)
     P("extendt is %f\n", extendt);
     fflush(stdout);
     ratio = extendt / mduration;
-    P("ratio is %d\n", ratio);
+    P("ratio is %f\n", ratio);
     fflush(stdout);
-    extendsyn(&cmagi, &dfri, nhar1, DUR, extendt, ratio);
+    extendsyn(&cmagi, &dfri, nhar1, DUR, extendt, frameDuration);
     P("the extension is done\n");
 }
 //shorten
@@ -220,7 +209,7 @@ fflush(stdout);
 int ADDSYN_endnote(ADDSYN_ins)
 ADDSYN_INS *ADDSYN_ins;
 {
-# line 134 "as.t"
+# line 123 "as.t"
 free(phasei);
 }
 
@@ -229,7 +218,7 @@ free(phasei);
 void ADDSYN_samp(ADDSYN_ins)
 ADDSYN_INS *ADDSYN_ins;
 {
-# line 137 "as.t"
+# line 126 "as.t"
 int i, k, narg1, narg2, iphasek;
 float sum, w1,w2,x1,x2, phasek, ampk;
 // if(itrap==0)

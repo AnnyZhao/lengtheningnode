@@ -196,6 +196,7 @@ void reddursyn(float** Cmag, float** Dfr, int nhar1, float length, float origDur
             (*Dfr)[k + i * nhar1] = dfrold[k + j * nhar1];
         }
         i++;
+        if (i >= nptsnew) break;
     }
     //update parameters for addsyn
     npts = nptsnew;
@@ -204,18 +205,63 @@ void reddursyn(float** Cmag, float** Dfr, int nhar1, float length, float origDur
     //debug printing
 }
 
+// Butterworth filter from http://baumdevblog.blogspot.com/2010/11/butterworth-lowpass-filter-coefficients.html
+// Cutoff is 20 Hz
 
-void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extension, int ratio)
+void getLPCoefficientsButterworth2Pole(const int samplerate, const double cutoff, double* const ax, double* const by)
+{
+    double sqrt2 = 1.4142135623730950488;
+
+    double QcRaw  = (2 * PI * cutoff) / samplerate; // Find cutoff frequency in [0..PI]
+    double QcWarp = tan(QcRaw); // Warp cutoff frequency
+
+    double gain = 1 / (1+sqrt2/QcWarp + 2/(QcWarp*QcWarp));
+    by[2] = (1 - sqrt2/QcWarp + 2/(QcWarp*QcWarp)) * gain;
+    by[1] = (2 - 2 * 2/(QcWarp*QcWarp)) * gain;
+    by[0] = 1;
+    ax[0] = 1 * gain;
+    ax[1] = 2 * gain;
+    ax[2] = 1 * gain;
+}
+
+void ButterworthFilter(float* samples, int count, int sampleRate)
+{
+    double xv[3];
+    double yv[3];
+    double ax[3];
+    double by[3];
+
+    getLPCoefficientsButterworth2Pole(sampleRate, 20, ax, by);
+
+    for (int i=0;i<count;i++)
+    {
+        xv[2] = xv[1]; xv[1] = xv[0];
+        xv[0] = samples[i];
+        yv[2] = yv[1]; yv[1] = yv[0];
+
+        yv[0] =   (ax[0] * xv[0] + ax[1] * xv[1] + ax[2] * xv[2]
+                     - by[1] * yv[0]
+                     - by[2] * yv[1]);
+        samples[i] = yv[0];
+    }
+}
+
+void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extension, float frameDuration)
 {
     int i = 0;
     int attackf, decayf;
     findattackdecay(&attackf, &decayf);
-    decayf = decayf - (decayf - attackf) * 0.3;
-    attackf = attackf + (decayf - attackf) * 0.3;
-    float mduration = (decayf - attackf) * dt;
+    decayf = decayf - (decayf - attackf) * 0.05;
+    attackf = attackf + (decayf - attackf) * 0.05;
 
-    int nptsnew = length/dt;
+    float mduration = (decayf - attackf) * dt;
+    float ratio = extension / mduration;
+
+    int nptsnew = length / dt;
     P("nptsnew: %d\n", nptsnew);
+    int extendframes = nptsnew - npts;
+
+    int frameRate = 1.0 / frameDuration;
 
     float* cmagold = *cmag;
     float* dfrold = *dfr;
@@ -226,8 +272,15 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
     float* dbnewscalefactor = (float*) calloc(nptsnew, sizeof(float));
     for (i = 0; i < npts; i++)
     {
-        dboriginal[i] = 20. * log10((*cmag)[i * nhar1]);
+        dboriginal[i] = (*cmag)[i * nhar1];
     }
+    // apply low-pass filtering to dboriginal
+    // to permit some variation in db level deviating from original
+    ButterworthFilter(dboriginal, npts, frameRate);
+    for (i = 0; i < npts; i++) {
+        dboriginal[i] = 20. * log10(dboriginal[i]);
+    }
+
     for (i = 0; i < npts; i++)
     {
         dbscalefactor[i] = dboriginal[attackf] - dboriginal[i];
@@ -239,15 +292,20 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
         {
             dbnew[i] = dboriginal[i];
         }
-        else if ((i - (nptsnew - npts)) >= decayf)
+        else if (i - extendframes >= decayf)
         {
-            dbnew[i] = dboriginal[i - (nptsnew - npts)];
+            dbnew[i] = dboriginal[i - extendframes];
         }
         else
         {
-            int a = floor((((float) i) - attackf) / ratio) + attackf;
-            int b = ceil((((float) i) - attackf) / ratio) + attackf;
-            float percentage = ((((float) i) - attackf) / ratio) + attackf - a;
+            float fullratio = ratio + 1;
+            int a = floor((((float) i) - attackf) / fullratio) + attackf;
+            int b = ceil((((float) i) - attackf) / fullratio) + attackf;
+            float percentage = ((((float) i) - attackf) / fullratio) + attackf - a;
+            if (a >= npts)
+            {
+                a = npts - 1;
+            }
             if (b >= npts)
             {
                 b = npts - 1;
@@ -259,43 +317,41 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
     {
         dbnewscalefactor[i] = dbnew[attackf] - dbnew[i];
     }
-    free(dboriginal);
-    dboriginal = NULL;
 
     *cmag = (float*)calloc(nptsnew * nhar1, sizeof(float));
     *dfr = (float*)calloc(nptsnew * nhar1, sizeof(float));
 
-    int fullloop;
-    fullloop = ratio / 2;
+    int samplePointer = 0;
+    int fullloop = ratio / 2;
     P("number of full loops: %d\n", fullloop);
     // first beginning to decayf
     int j,k;
-    for (i = 0; i < decayf; i++)
+    for (samplePointer = 0; samplePointer < decayf; samplePointer++)
     {
         for (k = 1; k < nhar1; k++)
         {
-            if (i <= attackf)
+            if (samplePointer <= attackf)
             {
-                (*cmag)[k + i * nhar1] = cmagold[k + i * nhar1];
+                (*cmag)[k + samplePointer * nhar1] = cmagold[k + samplePointer * nhar1];
             }
             else
             {
-                float logamplitude = log10(cmagold[k + i * nhar1]);
+                float logamplitude = log10(cmagold[k + samplePointer * nhar1]);
                 if (isnan(logamplitude))
                 {
-                    logamplitude = -1e5;
+                    logamplitude = -1e8;
                 }
-                float result = pow(10.0, ((20.0 * logamplitude + dbscalefactor[i] - dbnewscalefactor[i]) / 20.0));
+                float result = pow(10.0, ((20.0 * logamplitude + dbscalefactor[samplePointer] - dbnewscalefactor[samplePointer]) / 20.0));
                 if (isnan(result))
                 {
-                    (*cmag)[k + i * nhar1] = cmagold[k + i * nhar1];
+                    (*cmag)[k + samplePointer * nhar1] = cmagold[k + samplePointer * nhar1];
                 }
                 else
                 {
-                    (*cmag)[k + i * nhar1] = result;
+                    (*cmag)[k + samplePointer * nhar1] = result;
                 }
             }
-            (*dfr)[k + i * nhar1] = dfrold[k + i * nhar1];
+            (*dfr)[k + samplePointer * nhar1] = dfrold[k + samplePointer * nhar1];
         }
     }
     //loop between decay and attack
@@ -310,12 +366,12 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
                 float logamplitude = log10(cmagold[k + j * nhar1]);
                 if (isnan(logamplitude))
                 {
-                    logamplitude = -1e5;
+                    logamplitude = -1e8;
                 }
-                (*cmag)[k + i * nhar1] = pow(10.0, ((20.0 * logamplitude + dbscalefactor[j] - dbnewscalefactor[i]) / 20.0));
-                (*dfr)[k + i * nhar1] = dfrold[k + j * nhar1];
+                (*cmag)[k + samplePointer * nhar1] = pow(10.0, ((20.0 * logamplitude + dbscalefactor[j] - dbnewscalefactor[samplePointer]) / 20.0));
+                (*dfr)[k + samplePointer * nhar1] = dfrold[k + j * nhar1];
             }
-            i++;
+            samplePointer++;
         }
         //attack to decay
         for (j = attackf; j < decayf; j++)
@@ -325,12 +381,12 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
                 float logamplitude = log10(cmagold[k + j * nhar1]);
                 if (isnan(logamplitude))
                 {
-                    logamplitude = -1e5;
+                    logamplitude = -1e8;
                 }
-                (*cmag)[k + i * nhar1] = pow(10.0, ((20.0 * logamplitude + dbscalefactor[j] - dbnewscalefactor[i]) / 20.0));
-                (*dfr)[k + i * nhar1] = dfrold[k + j * nhar1];
+                (*cmag)[k + samplePointer * nhar1] = pow(10.0, ((20.0 * logamplitude + dbscalefactor[j] - dbnewscalefactor[samplePointer]) / 20.0));
+                (*dfr)[k + samplePointer * nhar1] = dfrold[k + j * nhar1];
             }
-            i++;
+            samplePointer++;
         }
         counter--;
     }
@@ -345,23 +401,38 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
     {
         for (k = 1; k < nhar1; k++)
         {
-            (*cmag)[k + i * nhar1] = cmagold[k + j * nhar1];
-            (*dfr)[k + i * nhar1] = dfrold[k + j * nhar1];
+            float logamplitude = log10(cmagold[k + j * nhar1]);
+            if (isnan(logamplitude))
+            {
+                logamplitude = -1e8;
+            }
+            (*cmag)[k + samplePointer * nhar1] = pow(10.0, ((20.0 * logamplitude + dbscalefactor[j] - dbnewscalefactor[samplePointer]) / 20.0));
+            (*dfr)[k + samplePointer * nhar1] = dfrold[k + j * nhar1];
         }
-        i++;
+        samplePointer++;
     }
     for (j = reversef; j < npts; j++)
     {
         for (k = 1; k < nhar1; k++)
         {
-            (*cmag)[k + i * nhar1] = cmagold[k + j * nhar1];
-            (*dfr)[k + i * nhar1] = dfrold[k + j * nhar1];
+            float logamplitude = log10(cmagold[k + j * nhar1]);
+            if (isnan(logamplitude))
+            {
+                logamplitude = -1e8;
+            }
+            (*cmag)[k + samplePointer * nhar1] = pow(10.0, ((20.0 * logamplitude + dbscalefactor[j] - dbnewscalefactor[samplePointer]) / 20.0));
+            (*dfr)[k + samplePointer * nhar1] = dfrold[k + j * nhar1];
         }
-        i++;
-        if (i >= nptsnew)
+        samplePointer++;
+        if (samplePointer >= nptsnew)
             break;
     }
 
     npts = nptsnew;
     tl = length;
+
+    free(dboriginal);
+    free(dbscalefactor);
+    free(dbnew);
+    free(dbnewscalefactor);
 }
