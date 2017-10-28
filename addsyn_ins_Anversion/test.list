@@ -30,7 +30,7 @@ Duration of sound is 2.390
 
 Type : compact
 
-Add syn of file cfl408.2.pv.an at start_time = 0.000, duration = 10.000
+Add syn of file cfl408.2.pv.an at start_time = 0.000, duration = 3.000
 pitch = 8.080, ampscale= 1.000
 original sound duration is 2.390 sec:
 npts in findattackdecay is 1985
@@ -42,63 +42,27 @@ dt is 0.001204
 attackt is 0.231158 and decayt is 2.067180
 minimum duration is 0.554
 mduration is 1.656634
-extendt is 7.610161
-ratio is 4.593750
+extendt is 0.610161
+ratio is 0.368314
 npts in findattackdecay is 1985
 db average = 58.7
 npts=1985
 attack frame is 192
 decay frame is 1717
-nptsnew: 8306
-number of full loops: 2
+nptsnew: 2491
+number of full loops: 0
 mduration is 1.656634
-final loop time is 0.983626
-the reversef is 1231
+final loop time is 0.610161
+the reversef is 1386
 the extension is done
-dxi: 0.037664
+dxi: 0.037642
 Complete addsyn setup
-Read file cfl408.2.pv.an 
-Date Recorded: 9/18/95
-Instrument is flute
-Analysis frequency = 415.3 Hz
-Time between frames = 0.00120 sec
-Analysis format is type compact
-Number of analysis frames is 1985
-Number of harmonics per frame = 26
-Duration of sound is 2.390
-
-Type : compact
-
-Add syn of file cfl408.2.pv.an at start_time = 11.000, duration = 20.000
-pitch = 8.080, ampscale= 1.000
-original sound duration is 2.390 sec:
-npts in findattackdecay is 1985
-db average = 58.7
-npts=1985
-attack frame is 192
-decay frame is 1717
-dt is 0.001204
-attackt is 0.231158 and decayt is 2.067180
-minimum duration is 0.554
-mduration is 1.656634
-extendt is 17.610161
-ratio is 10.630086
-npts in findattackdecay is 1985
-db average = 58.7
-npts=1985
-attack frame is 192
-decay frame is 1717
-nptsnew: 16612
-number of full loops: 5
-mduration is 1.656634
-final loop time is 1.043823
-the reversef is 1206
-the extension is done
-dxi: 0.037667
-Complete addsyn setup
+	Line 1, [Warn]  Sample out-of-range at or after time <0>
+ Current peak value(before clipping):
+  Channel[1]=47384.805;  1 samples were clipped.
 	Peak values for channels:
-	[1] =   5901.041
+	[1] =  47384.805
 	End of Performance.
-	Total Time = 31.00, Section Time = 31.00
+	Total Time =  3.00, Section Time =  3.00
 [Pass 3 Successful]
 [Job Complete]

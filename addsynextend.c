@@ -33,12 +33,13 @@ char *tail[MAXFTYPES] =  {"snd", "wav"};
 char *gettime(); int getfiltype();
 void cutSilence(float** cmag, float** dfr);
 void calcRMS(float* cmag);
-void extendsyn(char* filname, float length, float extension, int ratio);
+void extendsyn(float length, float extension, int ratio);
 void reddursyn(float length, float origDur);
 void addsyn(char* filnam, int byte_reverse);
 float blend(float x);
 void findattackdecay(int *attackf, int *decayf);
-
+void getLPCoefficientsButterworth2Pole(const int samplerate, const double cutoff, double* const ax, double* const by);
+void ButterworthFilter(float* samples, float* samplespassed, int count, int sampleRate);
 /* global variables: */
 HEADER header;
 int nhar, nhar1, npts;
@@ -119,15 +120,15 @@ int main ( int argc, char** argv )
 
     if (totalt > origDur)
     {
-        decayf = decayf - (decayf - attackf) * 0.43;
-        attackf = attackf + (decayf - attackf) * 0.43;
+        decayf = decayf - (decayf - attackf) * 0.01;
+        attackf = attackf + (decayf - attackf) * 0.01;
         float mduration = (decayf - attackf) * dt;
         P("mduration is %f\n", mduration);
         extendt = totalt - origDur;
         P("extendt is %f\n", extendt);
         ratio = extendt / mduration;
         P("ratio is %d\n",ratio);
-        extendsyn(synfil, totalt, extendt, ratio);
+        extendsyn(totalt, extendt, ratio);
         P("the extension is done");
     }
 
@@ -341,7 +342,247 @@ void reddursyn(float length, float origDur)
     }
 }
 
-void extendsyn(char* filname, float length, float extension, int ratio)
+// Butterworth filter from http://baumdevblog.blogspot.com/2010/11/butterworth-lowpass-filter-coefficients.html
+// Cutoff is 40 Hz
+
+void getLPCoefficientsButterworth2Pole(const int samplerate, const double cutoff, double* const ax, double* const by)
+{
+    double sqrt2 = 1.4142135623730950488;
+
+    double QcRaw  = (2 * 3.141516 * cutoff) / samplerate; // Find cutoff frequency in [0..PI]
+    double QcWarp = tan(QcRaw); // Warp cutoff frequency
+
+    double gain = 1 / (1+sqrt2/QcWarp + 2/(QcWarp*QcWarp));
+    by[2] = (1 - sqrt2/QcWarp + 2/(QcWarp*QcWarp)) * gain;
+    by[1] = (2 - 2 * 2/(QcWarp*QcWarp)) * gain;
+    by[0] = 1;
+    ax[0] = 1 * gain;
+    ax[1] = 2 * gain;
+    ax[2] = 1 * gain;
+}
+
+void ButterworthFilter(float* samples, float* samplespassed, int count, int sampleRate)
+{
+    double xv[3];
+    double yv[3];
+    double ax[3];
+    double by[3];
+
+    getLPCoefficientsButterworth2Pole(sampleRate, 2, ax, by);
+
+    for (int i=0;i<count;i++)
+    {
+        xv[2] = xv[1]; xv[1] = xv[0];
+        xv[0] = samples[i];
+        yv[2] = yv[1]; yv[1] = yv[0];
+
+        yv[0] =   (ax[0] * xv[0] + ax[1] * xv[1] + ax[2] * xv[2]
+                     - by[1] * yv[0]
+                     - by[2] * yv[1]);
+        samplespassed[i] = yv[0];
+    }
+}
+
+// void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extension, float frameDuration)
+// {
+//     int i = 0;
+//     int k = 0;
+//     int attackf, decayf;
+//     findattackdecay(&attackf, &decayf);
+//     decayf = decayf - (decayf - attackf) * 0.05;
+//     attackf = attackf + (decayf - attackf) * 0.05;
+//
+//     float mduration = (decayf - attackf) * dt;
+//     float ratio = extension / mduration;
+//
+//     int nptsnew = length / dt;
+//     P("nptsnew: %d\n", nptsnew);
+//     int extendframes = nptsnew - npts;
+//
+//     int frameRate = 1.0 / frameDuration;
+//
+//     float* cmagold = *cmag;
+//     float* dfrold = *dfr;
+//     // calculate and interpolate amplitude variation
+//
+// //original data
+//     float** amporiginal = (float**) calloc(nhar1, sizeof(float*));
+//     float** amplowpassed = (float**) calloc(nhar1, sizeof(float*));
+//     float** microvaria = (float**) calloc(nhar1, sizeof(float*));
+// //new data
+//     float** amplowpassednew = (float**) calloc(nhar1, sizeof(float*));
+//     float** microvarialooped = (float**) calloc(nhar1, sizeof(float*));
+//
+//     for (k = 1; k < nhar1; k++)
+//     {
+//     //original data
+//         amporiginal[k] = (float*) calloc(npts, sizeof(float));
+//         amplowpassed[k] = (float*) calloc(npts, sizeof(float));
+//         microvaria[k] = (float*) calloc(npts, sizeof(float));
+//     //new data
+//         amplowpassednew[k] = (float*) calloc(nptsnew, sizeof(float));
+//         microvarialooped[k] = (float*) calloc(nptsnew, sizeof(float));
+//     }
+//
+// // doing lowpass
+//     for (k = 1; k < nhar1; k++)
+//     {
+//         for (i = 0; i < npts; i++)
+//         {
+//             amporiginal[k][i] = (*cmag)[k + i * nhar1];
+//         }
+//         // apply low-pass filtering to dboriginal
+//         // to permit some variation in db level deviating from original
+//         ButterworthFilter(amporiginal[k], amplowpassed[k], npts, frameRate);
+//     }
+//
+//
+// //shift amplowpassed
+// int shift;
+// int shiftamount = frameRate / 2;
+//     for (k = 1; k < nhar1; k++)
+//     {
+//
+//         for (i = shiftamount; i < npts; i++)
+//         {
+//             shift = i - shiftamount;
+//             amplowpassed[k][shift] = amplowpassed[k][i];
+//         }
+//         for (shift = npts - shiftamount; shift < npts; shift++)
+//         {
+//             amplowpassed[k][shift] = amplowpassed[k][npts - shiftamount - 1];
+//         }
+//     }
+// //time scale amplowpassed
+//     for (k = 1; k < nhar1; k++)
+//     {
+//         for (i = 0; i < nptsnew; i++)
+//         {
+//             int intoSustain = i - attackf;
+//             if (intoSustain <= 0)
+//             {
+//                 amplowpassednew[k][i] = amporiginal[k][i];
+//             }
+//             else if (i - extendframes >= decayf)
+//             {
+//                 amplowpassednew[k][i] = amporiginal[k][i - extendframes];
+//             }
+//             else
+//             {
+//                 float fullratio = ratio + 1;
+//                 int a = floor((((float) i) - attackf) / fullratio) + attackf;
+//                 int b = ceil((((float) i) - attackf) / fullratio) + attackf;
+//                 float percentage = ((((float) i) - attackf) / fullratio) + attackf - a;
+//                 if (a >= npts)
+//                 {
+//                     a = npts - 1;
+//                 }
+//                 if (b >= npts)
+//                 {
+//                     b = npts - 1;
+//                 }
+//                 amplowpassednew[k][i] = amporiginal[k][b] * percentage + amporiginal[k][a] * (1 - percentage);
+//             }
+//         }
+//     }
+//
+//     //loop microvaria
+//     *cmag = (float*)calloc(nptsnew * nhar1, sizeof(float));
+//     *dfr = (float*)calloc(nptsnew * nhar1, sizeof(float));
+//
+//     int samplePointer = 0;
+//     int fullloop = ratio / 2;
+//     P("number of full loops: %d\n", fullloop);
+//     // first beginning to decayf
+//     int j;
+//     for (samplePointer = 0; samplePointer < decayf; samplePointer++)
+//     {
+//         for (k = 1; k < nhar1; k++)
+//         {
+//             if (samplePointer <= attackf)
+//             {
+//                 //microvarialooped[k][samplePointer] = cmagold[k + samplePointer * nhar1];
+//                 (*cmag)[k + samplePointer * nhar1] = cmagold[k + samplePointer * nhar1];
+//             }
+//             else
+//             {
+//                 // float result = pow(10.0, ((20.0 * logamplitude + dbscalefactor[k][samplePointer] - dbnewscalefactor[k][samplePointer]) / 20.0));
+//                 (*cmag)[k + samplePointer * nhar1] = cmagold[k + samplePointer * nhar1] / amplowpassed[k][samplePointer] * amplowpassednew[k][samplePointer];
+//             }
+//             (*dfr)[k + samplePointer * nhar1] = dfrold[k + samplePointer * nhar1];
+//         }
+//     }
+//     //loop between decay and attack
+//     int counter = fullloop;
+//     while (counter > 0)
+//     {
+//         //decaty to attack
+//         for (j = decayf; j > attackf; j--)
+//         {
+//             for (k = 1; k < nhar1; k++)
+//             {
+//                 //float logamplitude = log10(cmagold[k + j * nhar1]);
+//                 (*cmag)[k + samplePointer * nhar1] = cmagold[k + j * nhar1] / amplowpassed[k][j] * amplowpassednew[k][samplePointer];
+//                 (*dfr)[k + samplePointer * nhar1] = dfrold[k + j * nhar1];
+//             }
+//             samplePointer++;
+//         }
+//         //attack to decay
+//         for (j = attackf; j < decayf; j++)
+//         {
+//             for (k = 1; k < nhar1; k++)
+//             {
+//                 (*cmag)[k + samplePointer * nhar1] = cmagold[k + j * nhar1] / amplowpassed[k][j] * amplowpassednew[k][samplePointer];
+//                 (*dfr)[k + samplePointer * nhar1] = dfrold[k + j * nhar1];
+//             }
+//             samplePointer++;
+//         }
+//         counter--;
+//     }
+//
+//     //last round, decay to reverse to end
+//     P("mduration is %f\n", mduration);
+//     float finalLoopT = extension - fullloop * mduration * 2;
+//     P ("final loop time is %f\n", finalLoopT);
+//     int reversef = decayf - 0.5 * finalLoopT / dt;
+//     P ("the reversef is %d\n", reversef);
+//     for (j = decayf; j > reversef; j--)
+//     {
+//         for (k = 1; k < nhar1; k++)
+//         {
+//             (*cmag)[k + samplePointer * nhar1] = cmagold[k + j * nhar1] / amplowpassed[k][j] * amplowpassednew[k][samplePointer];
+//             (*dfr)[k + samplePointer * nhar1] = dfrold[k + j * nhar1];
+//         }
+//         samplePointer++;
+//     }
+//     for (j = reversef; j < npts; j++)
+//     {
+//         for (k = 1; k < nhar1; k++)
+//         {
+//             (*cmag)[k + samplePointer * nhar1] = cmagold[k + j * nhar1] / amplowpassed[k][j] * amplowpassednew[k][samplePointer];
+//             (*dfr)[k + samplePointer * nhar1] = dfrold[k + j * nhar1];
+//         }
+//         samplePointer++;
+//         if (samplePointer >= nptsnew)
+//             break;
+//     }
+//
+//     npts = nptsnew;
+//     tl = length;
+//
+//     for (k = 1; k < nhar1; k++)
+//     {
+//         free(amporiginal[k]);
+//         free(amplowpassed[k]);
+//         free(amplowpassednew[k]);
+//     }
+//
+//     free(amporiginal);
+//     free(amplowpassed);
+//     free(amplowpassednew);
+// }
+
+void extendsyn(float length, float extension, int ratio)
 {
     int i = 0;
     int attackf, decayf;

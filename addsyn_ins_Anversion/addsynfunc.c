@@ -206,7 +206,7 @@ void reddursyn(float** Cmag, float** Dfr, int nhar1, float length, float origDur
 }
 
 // Butterworth filter from http://baumdevblog.blogspot.com/2010/11/butterworth-lowpass-filter-coefficients.html
-// Cutoff is 20 Hz
+// Cutoff is 40 Hz
 
 void getLPCoefficientsButterworth2Pole(const int samplerate, const double cutoff, double* const ax, double* const by)
 {
@@ -224,14 +224,14 @@ void getLPCoefficientsButterworth2Pole(const int samplerate, const double cutoff
     ax[2] = 1 * gain;
 }
 
-void ButterworthFilter(float* samples, int count, int sampleRate)
+void ButterworthFilter(float* samples, float* samplespassed, int count, int sampleRate)
 {
     double xv[3];
     double yv[3];
     double ax[3];
     double by[3];
 
-    getLPCoefficientsButterworth2Pole(sampleRate, 20, ax, by);
+    getLPCoefficientsButterworth2Pole(sampleRate, 2, ax, by);
 
     for (int i=0;i<count;i++)
     {
@@ -242,13 +242,14 @@ void ButterworthFilter(float* samples, int count, int sampleRate)
         yv[0] =   (ax[0] * xv[0] + ax[1] * xv[1] + ax[2] * xv[2]
                      - by[1] * yv[0]
                      - by[2] * yv[1]);
-        samples[i] = yv[0];
+        samplespassed[i] = yv[0];
     }
 }
 
 void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extension, float frameDuration)
 {
     int i = 0;
+    int k = 0;
     int attackf, decayf;
     findattackdecay(&attackf, &decayf);
     decayf = decayf - (decayf - attackf) * 0.05;
@@ -266,58 +267,89 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
     float* cmagold = *cmag;
     float* dfrold = *dfr;
     // calculate and interpolate amplitude variation
-    float* dboriginal = (float*) calloc(npts, sizeof(float));
-    float* dbscalefactor = (float*) calloc(npts, sizeof(float));
-    float* dbnew = (float*) calloc(nptsnew, sizeof(float));
-    float* dbnewscalefactor = (float*) calloc(nptsnew, sizeof(float));
-    for (i = 0; i < npts; i++)
+
+//original data
+    float** amporiginal = (float**) calloc(nhar1, sizeof(float*));
+    float** amplowpassed = (float**) calloc(nhar1, sizeof(float*));
+    float** microvaria = (float**) calloc(nhar1, sizeof(float*));
+//new data
+    float** amplowpassednew = (float**) calloc(nhar1, sizeof(float*));
+    float** microvarialooped = (float**) calloc(nhar1, sizeof(float*));
+
+    for (k = 1; k < nhar1; k++)
     {
-        dboriginal[i] = (*cmag)[i * nhar1];
-    }
-    // apply low-pass filtering to dboriginal
-    // to permit some variation in db level deviating from original
-    ButterworthFilter(dboriginal, npts, frameRate);
-    for (i = 0; i < npts; i++) {
-        dboriginal[i] = 20. * log10(dboriginal[i]);
+    //original data
+        amporiginal[k] = (float*) calloc(npts, sizeof(float));
+        amplowpassed[k] = (float*) calloc(npts, sizeof(float));
+        microvaria[k] = (float*) calloc(npts, sizeof(float));
+    //new data
+        amplowpassednew[k] = (float*) calloc(nptsnew, sizeof(float));
+        microvarialooped[k] = (float*) calloc(nptsnew, sizeof(float));
     }
 
-    for (i = 0; i < npts; i++)
+// doing lowpass
+    for (k = 1; k < nhar1; k++)
     {
-        dbscalefactor[i] = dboriginal[attackf] - dboriginal[i];
-    }
-    for (i = 0; i < nptsnew; i++)
-    {
-        int intoSustain = i - attackf;
-        if (intoSustain <= 0)
+        for (i = 0; i < npts; i++)
         {
-            dbnew[i] = dboriginal[i];
+            amporiginal[k][i] = (*cmag)[k + i * nhar1];
         }
-        else if (i - extendframes >= decayf)
-        {
-            dbnew[i] = dboriginal[i - extendframes];
-        }
-        else
-        {
-            float fullratio = ratio + 1;
-            int a = floor((((float) i) - attackf) / fullratio) + attackf;
-            int b = ceil((((float) i) - attackf) / fullratio) + attackf;
-            float percentage = ((((float) i) - attackf) / fullratio) + attackf - a;
-            if (a >= npts)
-            {
-                a = npts - 1;
-            }
-            if (b >= npts)
-            {
-                b = npts - 1;
-            }
-            dbnew[i] = dboriginal[a] * percentage + dboriginal[b] * (1 - percentage);
-        }
-    }
-    for (i = 0; i < nptsnew; i++)
-    {
-        dbnewscalefactor[i] = dbnew[attackf] - dbnew[i];
+        // apply low-pass filtering to dboriginal
+        // to permit some variation in db level deviating from original
+        ButterworthFilter(amporiginal[k], amplowpassed[k], npts, frameRate);
     }
 
+
+//shift amplowpassed
+int shift;
+int shiftamount = 1./sqrt(2.) * 4. * atan(1.) * 2 * frameDuration;
+    for (k = 1; k < nhar1; k++)
+    {
+
+        for (i = shiftamount; i < npts; i++)
+        {
+            shift = i - shiftamount;
+            amplowpassed[k][shift] = amplowpassed[k][i];
+        }
+        for (shift = npts - shiftamount; shift < npts; shift++)
+        {
+            amplowpassed[k][shift] = amplowpassed[k][npts - shiftamount - 1];
+        }
+    }
+//time scale amplowpassed
+    for (k = 1; k < nhar1; k++)
+    {
+        for (i = 0; i < nptsnew; i++)
+        {
+            int intoSustain = i - attackf;
+            if (intoSustain <= 0)
+            {
+                amplowpassednew[k][i] = amporiginal[k][i];
+            }
+            else if (i - extendframes >= decayf)
+            {
+                amplowpassednew[k][i] = amporiginal[k][i - extendframes];
+            }
+            else
+            {
+                float fullratio = ratio + 1;
+                int a = floor((((float) i) - attackf) / fullratio) + attackf;
+                int b = ceil((((float) i) - attackf) / fullratio) + attackf;
+                float percentage = ((((float) i) - attackf) / fullratio) + attackf - a;
+                if (a >= npts)
+                {
+                    a = npts - 1;
+                }
+                if (b >= npts)
+                {
+                    b = npts - 1;
+                }
+                amplowpassednew[k][i] = amporiginal[k][b] * percentage + amporiginal[k][a] * (1 - percentage);
+            }
+        }
+    }
+
+    //loop microvaria
     *cmag = (float*)calloc(nptsnew * nhar1, sizeof(float));
     *dfr = (float*)calloc(nptsnew * nhar1, sizeof(float));
 
@@ -325,31 +357,20 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
     int fullloop = ratio / 2;
     P("number of full loops: %d\n", fullloop);
     // first beginning to decayf
-    int j,k;
+    int j;
     for (samplePointer = 0; samplePointer < decayf; samplePointer++)
     {
         for (k = 1; k < nhar1; k++)
         {
             if (samplePointer <= attackf)
             {
+                //microvarialooped[k][samplePointer] = cmagold[k + samplePointer * nhar1];
                 (*cmag)[k + samplePointer * nhar1] = cmagold[k + samplePointer * nhar1];
             }
             else
             {
-                float logamplitude = log10(cmagold[k + samplePointer * nhar1]);
-                if (isnan(logamplitude))
-                {
-                    logamplitude = -1e8;
-                }
-                float result = pow(10.0, ((20.0 * logamplitude + dbscalefactor[samplePointer] - dbnewscalefactor[samplePointer]) / 20.0));
-                if (isnan(result))
-                {
-                    (*cmag)[k + samplePointer * nhar1] = cmagold[k + samplePointer * nhar1];
-                }
-                else
-                {
-                    (*cmag)[k + samplePointer * nhar1] = result;
-                }
+                // float result = pow(10.0, ((20.0 * logamplitude + dbscalefactor[k][samplePointer] - dbnewscalefactor[k][samplePointer]) / 20.0));
+                (*cmag)[k + samplePointer * nhar1] = cmagold[k + samplePointer * nhar1] / amplowpassed[k][samplePointer] * amplowpassednew[k][samplePointer];
             }
             (*dfr)[k + samplePointer * nhar1] = dfrold[k + samplePointer * nhar1];
         }
@@ -363,12 +384,8 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
         {
             for (k = 1; k < nhar1; k++)
             {
-                float logamplitude = log10(cmagold[k + j * nhar1]);
-                if (isnan(logamplitude))
-                {
-                    logamplitude = -1e8;
-                }
-                (*cmag)[k + samplePointer * nhar1] = pow(10.0, ((20.0 * logamplitude + dbscalefactor[j] - dbnewscalefactor[samplePointer]) / 20.0));
+                //float logamplitude = log10(cmagold[k + j * nhar1]);
+                (*cmag)[k + samplePointer * nhar1] = cmagold[k + j * nhar1] / amplowpassed[k][j] * amplowpassednew[k][samplePointer];
                 (*dfr)[k + samplePointer * nhar1] = dfrold[k + j * nhar1];
             }
             samplePointer++;
@@ -378,12 +395,7 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
         {
             for (k = 1; k < nhar1; k++)
             {
-                float logamplitude = log10(cmagold[k + j * nhar1]);
-                if (isnan(logamplitude))
-                {
-                    logamplitude = -1e8;
-                }
-                (*cmag)[k + samplePointer * nhar1] = pow(10.0, ((20.0 * logamplitude + dbscalefactor[j] - dbnewscalefactor[samplePointer]) / 20.0));
+                (*cmag)[k + samplePointer * nhar1] = cmagold[k + j * nhar1] / amplowpassed[k][j] * amplowpassednew[k][samplePointer];
                 (*dfr)[k + samplePointer * nhar1] = dfrold[k + j * nhar1];
             }
             samplePointer++;
@@ -401,12 +413,7 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
     {
         for (k = 1; k < nhar1; k++)
         {
-            float logamplitude = log10(cmagold[k + j * nhar1]);
-            if (isnan(logamplitude))
-            {
-                logamplitude = -1e8;
-            }
-            (*cmag)[k + samplePointer * nhar1] = pow(10.0, ((20.0 * logamplitude + dbscalefactor[j] - dbnewscalefactor[samplePointer]) / 20.0));
+            (*cmag)[k + samplePointer * nhar1] = cmagold[k + j * nhar1] / amplowpassed[k][j] * amplowpassednew[k][samplePointer];
             (*dfr)[k + samplePointer * nhar1] = dfrold[k + j * nhar1];
         }
         samplePointer++;
@@ -415,12 +422,7 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
     {
         for (k = 1; k < nhar1; k++)
         {
-            float logamplitude = log10(cmagold[k + j * nhar1]);
-            if (isnan(logamplitude))
-            {
-                logamplitude = -1e8;
-            }
-            (*cmag)[k + samplePointer * nhar1] = pow(10.0, ((20.0 * logamplitude + dbscalefactor[j] - dbnewscalefactor[samplePointer]) / 20.0));
+            (*cmag)[k + samplePointer * nhar1] = cmagold[k + j * nhar1] / amplowpassed[k][j] * amplowpassednew[k][samplePointer];
             (*dfr)[k + samplePointer * nhar1] = dfrold[k + j * nhar1];
         }
         samplePointer++;
@@ -431,8 +433,14 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
     npts = nptsnew;
     tl = length;
 
-    free(dboriginal);
-    free(dbscalefactor);
-    free(dbnew);
-    free(dbnewscalefactor);
+    for (k = 1; k < nhar1; k++)
+    {
+        free(amporiginal[k]);
+        free(amplowpassed[k]);
+        free(amplowpassednew[k]);
+    }
+
+    free(amporiginal);
+    free(amplowpassed);
+    free(amplowpassednew);
 }

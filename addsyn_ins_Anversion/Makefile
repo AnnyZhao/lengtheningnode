@@ -10,13 +10,13 @@ all: test.wav
 clean:
 	rm -f *.o m4c.* *.list as.c test.wav S1* S2*
 
-test.wav: m4c.as test.sc
+test.wav: m4c.asa test.sc
 	rm -f test.wav .list
-	$(M4CDIR)/util/runm4c m4c.as test.wav test.sc test.list
+	$(M4CDIR)/util/runm4c m4c.asa test.wav test.sc test.list
 
-m4c.as: as_orch.o as.o
+m4c.asa: as_orch.o as.o
 	$(M4CDIR)/util/mx as_orch.o as.o
-	mv m4c m4c.as
+	mv m4c m4c.asa
 
 as.o: as.c anread.c header.c header.h macro.h
 	cc $(CFLAGS) as.c

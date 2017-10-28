@@ -35,7 +35,6 @@ P("\nAdd syn of file %s at start_time = %.3f, duration = %.3f\n",
     anFile,STIME,DUR);
 P("pitch = %.3f, ampscale= %.3f\n", pch, ascale); fflush(stdout);
 
-float frameDuration = dt;
 
 freq = cpspitch(pch);
 ascalei = ascale;
@@ -48,6 +47,7 @@ for (k = 1; k < nhar1; k++) {
 /* provides time-scaling: */
 
 //start to Modify
+float frameDuration = dt;
 float origDur = tl;
 P("original sound duration is %.3f sec:\n", origDur);
 // increment for traversing the cmagi and dfri data
