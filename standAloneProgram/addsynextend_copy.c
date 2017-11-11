@@ -1,15 +1,8 @@
 /***************************************************************************
-                    addsynextend.c
-
-        Latest edit: 11/10/17
+                                addsynextend.c
 
 	Author: An Zhao  March, 2017
 
-    Changes:
-    10/28/17  az   Revised version with attempt to include expressive
-                   amplitude control separate from zig-zag interpolation
-    11/08/17  jwb  plot amplitude control of given harmonic.
-    11/10/17  jwb  eliminate auxiliary variable declaration.  
  ***************************************************************************/
 
 #include <stdio.h>
@@ -17,12 +10,13 @@
 #include <string.h>
 #include <sys/types.h>
 #include <fcntl.h>
-#include <math.h>
 #include "byteorder.h"
 #include "sndhdr.h"
 #include "wavhdr.h"
 #include "macro.h"
+#include "math.h"
 #include "header.h"
+
 
 #define ERROR	(-1)
 #define TABSIZ	5000
@@ -54,10 +48,10 @@ int nhar, nhar1, npts;
 float *cmag, *dfr, *phase, dt, tl, smax, fs, fa, scalefac;
 
 /* auxillary global variables: */
-// HEADER headera;					     /* jwb 02/21/99 */
-// int nhara, nhar1a, nchansa, nptsa, auxfile;	     /* jwb 02/21/99 */
-// float *cmaga, *dfra, *phasea, *bra, tla, dta, faa;    /* jwb 02/21/99 */
-// float *br, *timet;
+HEADER headera;					     /* jwb 02/21/99 */
+int nhara, nhar1a, nchansa, nptsa, auxfile;	     /* jwb 02/21/99 */
+float *cmaga, *dfra, *phasea, *bra, tla, dta, faa;    /* jwb 02/21/99 */
+float *br, *timet;
 
 float *cmagi, *dfri;
 
@@ -363,30 +357,27 @@ void getLPCoefficientsButterworth2Pole(const int samplerate, const double cutoff
 {
     double sqrt2 = 1.4142135623730950488;
 
-// Find cutoff frequency in [0..PI]
-    double QcRaw  = (2.*PI*cutoff)/samplerate; 
+    double QcRaw  = (2 * PI * cutoff) / samplerate; // Find cutoff frequency in [0..PI]
     double QcWarp = tan(QcRaw); // Warp cutoff frequency
 
-    double gain = 1./(1.+sqrt2/QcWarp + 2./(QcWarp*QcWarp));
+    double gain = 1 / (1+sqrt2/QcWarp + 2/(QcWarp*QcWarp));
     // double gain = 30.0 / (1+sqrt2/QcWarp + 2/(QcWarp*QcWarp));
-    by[2] = (1. - sqrt2/QcWarp + 2./(QcWarp*QcWarp)) * gain;
-    by[1] = (2. - 2.*2./(QcWarp*QcWarp))*gain;
-    by[0] = 1.;
-    ax[0] = 1.* gain;
-    ax[1] = 2.* gain;
-    ax[2] = 1.* gain;
+    by[2] = (1 - sqrt2/QcWarp + 2/(QcWarp*QcWarp)) * gain;
+    by[1] = (2 - 2 * 2/(QcWarp*QcWarp)) * gain;
+    by[0] = 1;
+    ax[0] = 1 * gain;
+    ax[1] = 2 * gain;
+    ax[2] = 1 * gain;
 }
 
-// void ButterworthFilter(float* samples, float* samplespassed, int count, int sampleRate)
-void ButterworthFilter(float* samples, float* samplespassed, int count, int sampleRate, float cutoff)
+void ButterworthFilter(float* samples, float* samplespassed, int count, int sampleRate)
 {
     double xv[3];
     double yv[3];
     double ax[3];
     double by[3];
 
-//  getLPCoefficientsButterworth2Pole(sampleRate, 2, ax, by);
-    getLPCoefficientsButterworth2Pole(sampleRate, cutoff, ax, by);
+    getLPCoefficientsButterworth2Pole(sampleRate, 50, ax, by);
 
     for (int i=0;i<count;i++)
     {
@@ -443,9 +434,6 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
     }
 
     // doing lowpass
-    float cutoff;					    /* jwb 11/10/17 */
-    P("Give lowpass filter cutoff frequency: ");	    /* jwb 11/10/17 */
-    scanf("%f%*c", &cutoff);				    /* jwb 11/10/17 */
     for (k = 1; k < nhar1; k++)
     {
         for (i = 0; i < npts; i++)
@@ -454,16 +442,16 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
         }
         // apply low-pass filtering to dboriginal
         // to permit some variation in db level deviating from original
-//      ButterworthFilter(amporiginal[k], amplowpassed[k], npts, frameRate);
-      ButterworthFilter(amporiginal[k],amplowpassed[k],npts,frameRate,cutoff);
+        ButterworthFilter(amporiginal[k], amplowpassed[k], npts, frameRate);
     }
+
 
     //shift amplowpassed
     int shift;
-//  int shiftamount = 1./sqrt(2.) * 4. * atan(1.) * 2 * frameDuration;
-    int shiftamount = 1./(sqrt(2.)*4.*atan(1.)*cutoff*frameDuration);//11/10/17
+    int shiftamount = 1./sqrt(2.) * 4. * atan(1.) * 2 * frameDuration;
     for (k = 1; k < nhar1; k++)
     {
+
         for (i = shiftamount; i < npts; i++)
         {
             shift = i - shiftamount;
@@ -502,7 +490,7 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
                 {
                     b = npts - 1;
                 }
-                amplowpassednew[k][i] = amplowpassed[k][b] * percentage + amporiginal[k][a] * (1 - percentage);
+                amplowpassednew[k][i] = amporiginal[k][b] * percentage + amporiginal[k][a] * (1 - percentage);
             }
         }
     }
@@ -510,23 +498,6 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
     //loop microvaria
     *cmag = (float*)calloc(nptsnew * nhar1, sizeof(float));
     *dfr = (float*)calloc(nptsnew * nhar1, sizeof(float));
-
-// plot a harmonic amplitude				    /*jwb 11/08/17 */
-
-    P("After low pass and extend on harmonics amplitude --\n\n");
-    P("Give harmonic number of amplitude to plot: ");
-    scanf("%d%*c", &k);
-    float *Haramp = (float*)calloc(nptsnew,sizeof(float));
-    float *Time = (float*)calloc(nptsnew,sizeof(float));
-    for(i=0; i<nptsnew; i++)
-    {
-      Haramp[i] = amplowpassednew[k][i];
-      Time[i] = i*dt;
-    } 
-    char svlabel[80];
-    sprintf(svlabel,"HARMONIC AMPL %d", k);
-    plotseg(Time,Haramp,nptsnew,"TIME (SEC)",svlabel);
-// end plot a harmonic amplitude
 
     int samplePointer = 0;
     int fullloop = ratio / 2;

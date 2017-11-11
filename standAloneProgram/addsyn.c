@@ -332,3 +332,8 @@ getout()						    /* jwb 04/19/98 */
   P("and %s extensions are supported\n", tail[MAXFTYPES-1]);/* jwb 04/19/98 */
   exit(-1);						    /* jwb 04/19/98 */
 }							    /* jwb 04/19/98 */
+
+int plabel(double xpos, double ypos)
+{
+    return 0;
+}
