@@ -1,8 +1,15 @@
 /***************************************************************************
-                                addsynextend.c
+                    addsynextend.c
+
+        Latest edit: 11/10/17
 
 	Author: An Zhao  March, 2017
 
+    Changes:
+    10/28/17  az   Revised version with attempt to include expressive
+                   amplitude control separate from zig-zag interpolation
+    11/08/17  jwb  plot amplitude control of given harmonic.
+    11/10/17  jwb  eliminate auxiliary variable declaration.
  ***************************************************************************/
 
 #include <stdio.h>
@@ -10,15 +17,13 @@
 #include <string.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include <math.h>
 #include "byteorder.h"
 #include "sndhdr.h"
 #include "wavhdr.h"
 #include "macro.h"
-#include <math.h>
 #include "header.h"
 
-
-#define PI 3.1415926534898
 #define ERROR	(-1)
 #define TABSIZ	5000
 #define FLOAT 	0
@@ -27,30 +32,38 @@
 #define WAVE     1
 #define MAXFTYPES  2
 #define P  printf
+#define PI 3.1415926535898
 
 char *tail[MAXFTYPES] =  {"snd", "wav"};
 
 /* function declarations */
-char *gettime();
-int getfiltype();
+char *gettime(); int getfiltype();
 void cutSilence(float** cmag, float** dfr);
 void calcRMS(float* cmag);
+void timescalemin(float** Cmag, float** Dfr, int nhar1, float length, float mintime, float origDur);
 void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extension, float frameDuration);
-void reddursyn(float** Cmag, float** Dfr, int nhar1, float length, float origDur, float frameDuration);
+void reddursyn(float** Cmag, float** Dfr, int nhar1, float length, float origDur);
 void addsyn(char* filnam, int byte_reverse);
 float blend(float x);
-void findattackdecay(int *attackf, int *decayf, float frameDuration);
-void timescalemin(float** Cmag, float** Dfr, int nhar1, float length, float mintime, float origDur, float frameDuration);
+void findattackdecay(int *attackf, int *decayf);
+void getout();
 
 /* global variables: */
 HEADER header;
 int nhar, nhar1, npts;
 float *cmag, *dfr, *phase, dt, tl, smax, fs, fa, scalefac;
 
+/* auxillary global variables: */
+// HEADER headera;					     /* jwb 02/21/99 */
+// int nhara, nhar1a, nchansa, nptsa, auxfile;	     /* jwb 02/21/99 */
+// float *cmaga, *dfra, *phasea, *bra, tla, dta, faa;    /* jwb 02/21/99 */
+// float *br, *timet;
+
+float *cmagi, *dfri;
+
 /* main function */
 int main ( int argc, char** argv )
 {
-
     char *anfil, *synfil;
     int byte_reverse = 0;
     if(argc < 3)
@@ -77,7 +90,7 @@ int main ( int argc, char** argv )
     /*     figure out input and output file names  */
     anfil = *(argv + 1);  synfil = *(argv + 2);
 
-/*  read in analysis data for given file  */
+    /*  read in analysis data for given file  */
     if(anread(anfil))
     {
         P("analysis file %s isn't available; try another\n",anfil);
@@ -92,9 +105,10 @@ int main ( int argc, char** argv )
     P("original sound duration is %.3f sec:\n", origDur);
     // increment for traversing the cmagi and dfri data
 
+
     calcRMS(cmag);
     int attackf, decayf;
-    findattackdecay(&attackf, &decayf, frameDuration);
+    findattackdecay(&attackf, &decayf);
 
     float attackt = attackf * dt;
     float decayt = decayf * dt;
@@ -105,14 +119,12 @@ int main ( int argc, char** argv )
     float ratio;
     float minimumT = attackt + (origDur - decayt);
     P("minimum duration is %.3f\n", minimumT);
-    while (1)
-    {
-        P("Give new time duration: ");			    /* jwb 02/03/17 */
-        scanf("%f", &totalt);
-        if (totalt > minimumT) break;
-        P("time is too short to reduce\n");	    /* jwb 02/03/17 */
-        P("Try again.\n");
-    }
+
+    P("Give new duration: ");				    /* jwb 10/14/17 */
+    scanf("%f%*c", &totalt);				    /* jwb 10/14/17 */
+
+    cmagi = cmag;
+    dfri = dfr;
 
     //extend
     if (totalt > origDur)
@@ -128,7 +140,7 @@ int main ( int argc, char** argv )
         ratio = extendt / mduration;
         P("ratio is %f\n", ratio);
         fflush(stdout);
-        extendsyn(&cmag, &dfr, nhar1, totalt, extendt, frameDuration);
+        extendsyn(&cmagi, &dfri, nhar1, totalt, extendt, frameDuration);
         P("the extension is done\n");
     }
     //shorten
@@ -136,27 +148,25 @@ int main ( int argc, char** argv )
     {
         if (totalt < minimumT) // timescale compressed attack+decay
         {
-            timescalemin(&cmag, &dfr, nhar1, totalt, minimumT, origDur, frameDuration);
+            timescalemin(&cmagi, &dfri, nhar1, totalt, minimumT, origDur);
         }
         else
         {
-            reddursyn(&cmag, &dfr, nhar1, totalt, origDur, frameDuration);
+            reddursyn(&cmagi, &dfri, nhar1, totalt, origDur);
         }
     }
 
+    cmag = cmagi;
+    dfr = dfri;
 
     /*  resynthesize tone at sample rate fs */
     P("Begin synthesis\n");
     addsyn(synfil, byte_reverse);				    /* jwb 12/06/99 */
-    P("\nSynthesis of file %s complete \n", 		    /* jwb 04/02/98 */
-    			synfil);		    /* jwb 04/02/98 */
-					    /* jwb 02/03/17 */
+    P("\nSynthesis of file complete\n"); 		    /* jwb 04/02/98 */
 }
 
 //functions
-float square(float x) {
-    return x * x;
-}
+void reddursyn(float** Cmag, float** Dfr, int nhar1, float length, float origDur);
 
 void calcRMS(float* cmag)
 {
@@ -166,64 +176,21 @@ void calcRMS(float* cmag)
     {
         for (k = 1; k < nhar1; k++)
         {
-            sum += square(cmag[k + i * nhar1]);
+            sum += sq(cmag[k + i * nhar1]);
         }
         sum = sqrt(sum);
         cmag[i* nhar1] = sum;
     }
 }
 
-// Butterworth filter from http://baumdevblog.blogspot.com/2010/11/butterworth-lowpass-filter-coefficients.html
-
-void getLPCoefficientsButterworth2Pole(const int samplerate, const double cutoff, double* const ax, double* const by)
-{
-    double sqrt2 = 1.4142135623730950488;
-
-    double QcRaw  = (2 * PI * cutoff) / samplerate; // Find cutoff frequency in [0..PI]
-    double QcWarp = tan(QcRaw); // Warp cutoff frequency
-
-    double gain = 1 / (1+sqrt2/QcWarp + 2/(QcWarp*QcWarp));
-    by[2] = (1 - sqrt2/QcWarp + 2/(QcWarp*QcWarp)) * gain;
-    by[1] = (2 - 2 * 2/(QcWarp*QcWarp)) * gain;
-    by[0] = 1;
-    ax[0] = 1 * gain;
-    ax[1] = 2 * gain;
-    ax[2] = 1 * gain;
-}
-
-void ButterworthFilter(float* samples, float* samplespassed, int count, int sampleRate, double cutoff)
-{
-    double xv[3] = {samples[0]};
-    double yv[3] = {samples[0]};
-    double ax[3] = {0};
-    double by[3] = {0};
-
-    // cutoff = 20
-    getLPCoefficientsButterworth2Pole(sampleRate, cutoff, ax, by);
-
-    for (int i = 0; i < count; i++)
-    {
-        xv[2] = xv[1]; xv[1] = xv[0];
-        xv[0] = samples[i];
-        yv[2] = yv[1]; yv[1] = yv[0];
-
-        yv[0] =   (ax[0] * xv[0] + ax[1] * xv[1] + ax[2] * xv[2]
-                     - by[1] * yv[0]
-                     - by[2] * yv[1]);
-        samplespassed[i] = yv[0];
-    }
-}
-
-void findattackdecay(int *attackf, int *decayf, float frameDuration)
+void findattackdecay(int *attackf, int *decayf)
 {
     //calculate the attack and decay
     //k = 0: rms amplitude
     //original no. of frames
     int i = 0;
     int debugattack = 10000;
-    float frameRate = 1.0 / frameDuration;
     float* dbarr = (float*)calloc(npts+1, sizeof(float));
-    float* dbarrlowpassed = (float*)calloc(npts+1, sizeof(float));
     P("npts in findattackdecay is %d\n", npts);
     float sumdb = 0;
     int npts_nonzero = 0;
@@ -241,24 +208,8 @@ void findattackdecay(int *attackf, int *decayf, float frameDuration)
         sumdb += dbarr[i];
         //if (dbarr[i] > 17.0) npts_nonzero += 1;
     }
-    float avgdb = sumdb / npts;
+    float avgdb = sumdb/npts;
     P("db average = %.1f\n",avgdb);
-
-    // float cutoff = 20;
-    // ButterworthFilter(dbarr, dbarrlowpassed, npts, frameRate, cutoff);
-    //
-    // int shift;
-    // int shiftamount = 1./(sqrt(2.) * 4. * atan(1.) * cutoff * frameDuration);
-    // printf("Find attack decay: shift Amount to compensate for delay: %d\n", shiftamount);
-    // for (i = shiftamount; i < npts; i++)
-    // {
-    //     shift = i - shiftamount;
-    //     dbarrlowpassed[shift] = dbarrlowpassed[i];
-    // }
-    // for (shift = npts - shiftamount; shift < npts; shift++)
-    // {
-    //     dbarrlowpassed[shift] = dbarrlowpassed[npts - shiftamount - 1];
-    // }
 
     //first pass calculation
     float firstdiff = 0, seconddiff = 0;
@@ -295,11 +246,11 @@ float interpolation(float start, float end, float percentage)
     return start + (end - start) * percentage;
 }
 
-void timescalemin(float** Cmag, float** Dfr, int nhar1, float length, float mintime, float origDur, float frameDuration)
+void timescalemin(float** Cmag, float** Dfr, int nhar1, float length, float mintime, float origDur)
 {
     if (length > mintime)
         return; // not suitable for timescale
-    reddursyn(Cmag, Dfr, nhar1, mintime * 1.01, origDur, frameDuration);     //modify to minimumT
+    reddursyn(Cmag, Dfr, nhar1, mintime * 1.01, origDur);     //modify to minimumT
 
     float* cmagold = *Cmag;
     float* dfrold = *Dfr;
@@ -335,14 +286,13 @@ void timescalemin(float** Cmag, float** Dfr, int nhar1, float length, float mint
     npts = nptsnew;
 }
 
-void reddursyn(float** Cmag, float** Dfr, int nhar1, float length, float origDur, float frameDuration)
+void reddursyn(float** Cmag, float** Dfr, int nhar1, float length, float origDur)
 {
     float x,w;
     int attackf, decayf;
-    float frameRate = 1.0 / frameDuration;
-    findattackdecay(&attackf, &decayf, frameDuration);
-    decayf = decayf - (decayf - attackf) * 0.05;
-    attackf = attackf + (decayf - attackf) * 0.05;
+    findattackdecay(&attackf, &decayf);
+    // decayf = decayf - (decayf - attackf) * 0.3;
+    // attackf = attackf + (decayf - attackf) * 0.3;
     int nptsnew = length / dt;
     P("nptsnew: %d\n", nptsnew);
     int overlapF = nptsnew - attackf - (npts - decayf);
@@ -402,18 +352,47 @@ void reddursyn(float** Cmag, float** Dfr, int nhar1, float length, float origDur
     //update parameters for addsyn
     npts = nptsnew;
     tl = length;
+
+    //debug printing
 }
 
-
-void printCSV(const char* filename, const char* title, float* values, int number, float stepSize)
+void getLPCoefficientsButterworth2Pole(const int samplerate, const double cutoff, double* const ax, double* const by)
 {
-    FILE* pf = fopen(filename, "w");
-    fprintf(pf, "Time, %s\n", title);
-    int i = 0;
-    for (i = 0; i < number; i++) {
-        fprintf(pf, "%.6f, %.6f\n", i * stepSize, values[i]);
+    double sqrt2 = 1.4142135623730950488;
+
+    double QcRaw  = (2 * PI * cutoff) / samplerate; // Find cutoff frequency in [0..PI]
+    double QcWarp = tan(QcRaw); // Warp cutoff frequency
+
+    double gain = 1 / (1+sqrt2/QcWarp + 2/(QcWarp*QcWarp));
+    by[2] = (1 - sqrt2/QcWarp + 2/(QcWarp*QcWarp)) * gain;
+    by[1] = (2 - 2 * 2/(QcWarp*QcWarp)) * gain;
+    by[0] = 1;
+    ax[0] = 1 * gain;
+    ax[1] = 2 * gain;
+    ax[2] = 1 * gain;
+}
+
+void ButterworthFilter(float* samples, float* samplespassed, int count, int sampleRate, double cutoff)
+{
+    double xv[3] = {samples[0]};
+    double yv[3] = {samples[0]};
+    double ax[3] = {0};
+    double by[3] = {0};
+
+    // cutoff = 20
+    getLPCoefficientsButterworth2Pole(sampleRate, cutoff, ax, by);
+
+    for (int i = 0; i < count; i++)
+    {
+        xv[2] = xv[1]; xv[1] = xv[0];
+        xv[0] = samples[i];
+        yv[2] = yv[1]; yv[1] = yv[0];
+
+        yv[0] =   (ax[0] * xv[0] + ax[1] * xv[1] + ax[2] * xv[2]
+                     - by[1] * yv[0]
+                     - by[2] * yv[1]);
+        samplespassed[i] = yv[0];
     }
-    fclose(pf);
 }
 
 void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extension, float frameDuration)
@@ -421,10 +400,10 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
     int i = 0;
     int k = 0;
     int attackf, decayf;
+    findattackdecay(&attackf, &decayf);
     int frameRate = 1.0 / frameDuration;
-    findattackdecay(&attackf, &decayf, frameDuration);
-    decayf = decayf - (decayf - attackf) * 0.01;
-    attackf = attackf + (decayf - attackf) * 0.01;
+    decayf = decayf - (decayf - attackf) * 0.05;
+    attackf = attackf + (decayf - attackf) * 0.05;
 
     float mduration = (decayf - attackf) * dt;
     float ratio = extension / mduration;
@@ -433,27 +412,34 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
     P("nptsnew: %d\n", nptsnew);
     int extendframes = nptsnew - npts;
 
+
     float* cmagold = *cmag;
     float* dfrold = *dfr;
     // calculate and interpolate amplitude variation
 
-    // original data
+    //original data
     float** amporiginal = (float**) calloc(nhar1, sizeof(float*));
     float** amplowpassed = (float**) calloc(nhar1, sizeof(float*));
+    float** microvaria = (float**) calloc(nhar1, sizeof(float*));
     //new data
     float** amplowpassednew = (float**) calloc(nhar1, sizeof(float*));
+    float** microvarialooped = (float**) calloc(nhar1, sizeof(float*));
 
     for (k = 1; k < nhar1; k++)
     {
         //original data
         amporiginal[k] = (float*) calloc(npts, sizeof(float));
         amplowpassed[k] = (float*) calloc(npts, sizeof(float));
+        microvaria[k] = (float*) calloc(npts, sizeof(float));
         //new data
         amplowpassednew[k] = (float*) calloc(nptsnew, sizeof(float));
+        microvarialooped[k] = (float*) calloc(nptsnew, sizeof(float));
     }
 
     // doing lowpass
-    double cutoff = 10;
+    float cutoff;					    /* jwb 11/10/17 */
+    P("Give lowpass filter cutoff frequency: ");	    /* jwb 11/10/17 */
+    scanf("%f%*c", &cutoff);				    /* jwb 11/10/17 */
     for (k = 1; k < nhar1; k++)
     {
         for (i = 0; i < npts; i++)
@@ -462,22 +448,23 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
         }
         // apply low-pass filtering to dboriginal
         // to permit some variation in db level deviating from original
-        ButterworthFilter(amporiginal[k] + attackf, amplowpassed[k] + attackf, npts - attackf - (npts - decayf), frameRate, cutoff);
-        for (i = 0; i < attackf; i++) {
-            amplowpassed[k][i] = amporiginal[k][i];
-        }
-        for (i = decayf; i < npts; i++) {
-            amplowpassed[k][i] = amporiginal[k][i];
-        }
+//      ButterworthFilter(amporiginal[k], amplowpassed[k], npts, frameRate);
+      ButterworthFilter(amporiginal[k], amplowpassed[k], npts, frameRate, cutoff);
+      for (i = 0; i < attackf; i++) {
+          amplowpassed[k][i] = amporiginal[k][i];
+      }
+      for (i = decayf; i < npts; i++) {
+          amplowpassed[k][i] = amporiginal[k][i];
+      }
     }
 
     //shift amplowpassed
     int shift;
-    int shiftamount = 1./(sqrt(2.) * 4. * atan(1.) * cutoff * frameDuration);
-    printf("Shift Amount to compensate for delay: %d\n", shiftamount);
+//  int shiftamount = 1./sqrt(2.) * 4. * atan(1.) * 2 * frameDuration;
+    int shiftamount = 1./(sqrt(2.)*4.*atan(1.)*cutoff*frameDuration);//11/10/17
     for (k = 1; k < nhar1; k++)
     {
-        for (i = shiftamount + attackf; i < npts; i++)
+        for (i = shiftamount; i < npts; i++)
         {
             shift = i - shiftamount;
             amplowpassed[k][shift] = amplowpassed[k][i];
@@ -488,17 +475,13 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
         }
     }
 
-    printCSV("amplowpassed1.csv", "Low-pass (1st partial)", amplowpassed[1], npts, frameDuration);
-    printCSV("amplowpassed2.csv", "Low-pass (2st partial)", amplowpassed[2], npts, frameDuration);
-
     // plot a harmonic amplitude				    /*jwb 11/08/17 */
-
         P("After low pass on harmonics amplitude --\n\n");
         P("Give harmonic number of amplitude to plot: ");
         scanf("%d%*c", &k);
         float *Haramp = (float*)calloc(npts,sizeof(float));
         float *Time = (float*)calloc(npts,sizeof(float));
-        for(i=0; i<npts; i++)
+        for(i=0; i<nptsnew; i++)
         {
           Haramp[i] = amplowpassed[k][i];
           Time[i] = i*dt;
@@ -506,23 +489,7 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
         char svlabel[80];
         sprintf(svlabel,"HARMONIC AMPL %d", k);
         plotseg(Time,Haramp,npts,"TIME (SEC)",svlabel);
-
-    // crossfade into unshifted decay
-    for (k = 1; k < nhar1; k++)
-    {
-        int lowerReach = min(decayf, 100);
-        int length = lowerReach;
-        for (i = decayf - lowerReach; i < decayf; i++) {
-            float percentShifted = 1 - ((float)(i - decayf + lowerReach)) / length;
-            float percentUnshifted = 1 - percentShifted;
-            amplowpassed[k][i] = amplowpassed[k][i] * percentShifted + amporiginal[k][i] * percentUnshifted;
-        }
-
-        for (i = decayf; i < npts; i++)
-        {
-            amplowpassed[k][i] = amporiginal[k][i];
-        }
-    }
+    // end plot a harmonic amplitude
 
     //time scale amplowpassed
     for (k = 1; k < nhar1; k++)
@@ -534,9 +501,13 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
             {
                 amplowpassednew[k][i] = amporiginal[k][i];
             }
-            else if ((nptsnew - i) <= (npts - decayf))
+            // else if ((nptsnew - i) <= (npts - decayf))
+            // {
+            //     amplowpassednew[k][i] = amporiginal[k][(npts - (nptsnew - i))];
+            // }
+            else if (i - extendframes >= decayf)
             {
-                amplowpassednew[k][i] = amporiginal[k][(npts - (nptsnew - i))];
+                amplowpassednew[k][i] = amporiginal[k][i - extendframes];
             }
             else
             {
@@ -557,18 +528,26 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
         }
     }
 
-    printCSV("amporiginal1.csv", "Original amplitude (1st partial)", amporiginal[1], npts, frameDuration);
-    printCSV("amporiginal2.csv", "Original amplitude (2st partial)", amporiginal[2], npts, frameDuration);
+    // plot a harmonic amplitude				    /*jwb 11/08/17 */
 
-    printCSV("amplowpassednew1.csv", "Low-pass and stretch (1st partial)", amplowpassednew[1], nptsnew, frameDuration);
-    printCSV("amplowpassednew2.csv", "Low-pass and stretch (2st partial)", amplowpassednew[2], nptsnew, frameDuration);
-
-    printCSV("amplowpassed1cross.csv", "Low-pass and crossfade (1st partial)", amplowpassed[1], npts, frameDuration);
-    printCSV("amplowpassed2cross.csv", "Low-pass and crossfade (2st partial)", amplowpassed[2], npts, frameDuration);
+        P("After low pass and extend on harmonics amplitude --\n\n");
+        P("Give harmonic number of amplitude to plot: ");
+        scanf("%d%*c", &k);
+        float* Harampnew = (float*)calloc(nptsnew,sizeof(float));
+        float* Timenew = (float*)calloc(nptsnew,sizeof(float));
+        for(i=0; i<nptsnew; i++)
+        {
+          Harampnew[i] = amplowpassednew[k][i];
+          Timenew[i] = i*dt;
+        }
+        sprintf(svlabel,"HARMONIC AMPL %d", k);
+        plotseg(Timenew,Harampnew,nptsnew,"TIME (SEC)",svlabel);
+    // end plot a harmonic amplitude
 
     //loop microvaria
     *cmag = (float*)calloc(nptsnew * nhar1, sizeof(float));
     *dfr = (float*)calloc(nptsnew * nhar1, sizeof(float));
+
 
     int samplePointer = 0;
     int fullloop = ratio / 2;
@@ -581,6 +560,7 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
         {
             if (samplePointer <= attackf)
             {
+                //microvarialooped[k][samplePointer] = cmagold[k + samplePointer * nhar1];
                 (*cmag)[k + samplePointer * nhar1] = cmagold[k + samplePointer * nhar1];
             }
             else
@@ -856,7 +836,7 @@ int getfiltype(name) char *name;
   return(MAXFTYPES);
 }
 
-getout()						    /* jwb 04/19/98 */
+void getout()						    /* jwb 04/19/98 */
 {							    /* jwb 04/19/98 */
   int i;						    /* jwb 04/19/98 */
   P("Sorry, only ");					    /* jwb 04/19/98 */
@@ -867,8 +847,7 @@ getout()						    /* jwb 04/19/98 */
 
 int plotSamples(int sr, int sampN, float* times, float* samplesfloat)
 {
-    char graphlabel[100] = {0};
-    sprintf(graphlabel, "signal amplitude for file ");
+    //sprintf(graphlabel, "signal amplitude for file ");
     int i1, i2;
     float t1, t2;
     P("plot some samples of the input sound file\n");	    /* jwb 02/02/17 */
