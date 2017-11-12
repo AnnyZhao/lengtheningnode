@@ -244,21 +244,21 @@ void findattackdecay(int *attackf, int *decayf, float frameDuration)
     float avgdb = sumdb / npts;
     P("db average = %.1f\n",avgdb);
 
-    float cutoff = 20;
-    ButterworthFilter(dbarr, dbarrlowpassed, npts, frameRate, cutoff);
-
-    int shift;
-    int shiftamount = 1./(sqrt(2.) * 4. * atan(1.) * cutoff * frameDuration);
-    printf("Find attack decay: shift Amount to compensate for delay: %d\n", shiftamount);
-    for (i = shiftamount; i < npts; i++)
-    {
-        shift = i - shiftamount;
-        dbarrlowpassed[shift] = dbarrlowpassed[i];
-    }
-    for (shift = npts - shiftamount; shift < npts; shift++)
-    {
-        dbarrlowpassed[shift] = dbarrlowpassed[npts - shiftamount - 1];
-    }
+    // float cutoff = 20;
+    // ButterworthFilter(dbarr, dbarrlowpassed, npts, frameRate, cutoff);
+    //
+    // int shift;
+    // int shiftamount = 1./(sqrt(2.) * 4. * atan(1.) * cutoff * frameDuration);
+    // printf("Find attack decay: shift Amount to compensate for delay: %d\n", shiftamount);
+    // for (i = shiftamount; i < npts; i++)
+    // {
+    //     shift = i - shiftamount;
+    //     dbarrlowpassed[shift] = dbarrlowpassed[i];
+    // }
+    // for (shift = npts - shiftamount; shift < npts; shift++)
+    // {
+    //     dbarrlowpassed[shift] = dbarrlowpassed[npts - shiftamount - 1];
+    // }
 
     //first pass calculation
     float firstdiff = 0, seconddiff = 0;
@@ -267,7 +267,7 @@ void findattackdecay(int *attackf, int *decayf, float frameDuration)
     for (i = 0; i < npts; i++)
     {
         firstdiff = seconddiff;
-        seconddiff = dbarrlowpassed[i] - avgdb * 1.1;
+        seconddiff = dbarr[i] - avgdb;
         if(seconddiff > 0 && firstdiff < 0)
         {
             if (debugattack > i)
@@ -423,8 +423,8 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
     int attackf, decayf;
     int frameRate = 1.0 / frameDuration;
     findattackdecay(&attackf, &decayf, frameDuration);
-    decayf = decayf - (decayf - attackf) * 0.1;
-    attackf = attackf + (decayf - attackf) * 0.1;
+    decayf = decayf - (decayf - attackf) * 0.01;
+    attackf = attackf + (decayf - attackf) * 0.01;
 
     float mduration = (decayf - attackf) * dt;
     float ratio = extension / mduration;
@@ -490,6 +490,22 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
 
     printCSV("amplowpassed1.csv", "Low-pass (1st partial)", amplowpassed[1], npts, frameDuration);
     printCSV("amplowpassed2.csv", "Low-pass (2st partial)", amplowpassed[2], npts, frameDuration);
+
+    // plot a harmonic amplitude				    /*jwb 11/08/17 */
+
+        P("After low pass on harmonics amplitude --\n\n");
+        P("Give harmonic number of amplitude to plot: ");
+        scanf("%d%*c", &k);
+        float *Haramp = (float*)calloc(npts,sizeof(float));
+        float *Time = (float*)calloc(npts,sizeof(float));
+        for(i=0; i<npts; i++)
+        {
+          Haramp[i] = amplowpassed[k][i];
+          Time[i] = i*dt;
+        }
+        char svlabel[80];
+        sprintf(svlabel,"HARMONIC AMPL %d", k);
+        plotseg(Time,Haramp,npts,"TIME (SEC)",svlabel);
 
     // crossfade into unshifted decay
     for (k = 1; k < nhar1; k++)

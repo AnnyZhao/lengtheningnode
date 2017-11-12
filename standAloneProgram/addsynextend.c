@@ -9,7 +9,7 @@
     10/28/17  az   Revised version with attempt to include expressive
                    amplitude control separate from zig-zag interpolation
     11/08/17  jwb  plot amplitude control of given harmonic.
-    11/10/17  jwb  eliminate auxiliary variable declaration.  
+    11/10/17  jwb  eliminate auxiliary variable declaration.
  ***************************************************************************/
 
 #include <stdio.h>
@@ -356,39 +356,33 @@ void reddursyn(float** Cmag, float** Dfr, int nhar1, float length, float origDur
     //debug printing
 }
 
-// Butterworth filter from http://baumdevblog.blogspot.com/2010/11/butterworth-lowpass-filter-coefficients.html
-// Cutoff is 40 Hz
-
 void getLPCoefficientsButterworth2Pole(const int samplerate, const double cutoff, double* const ax, double* const by)
 {
     double sqrt2 = 1.4142135623730950488;
 
-// Find cutoff frequency in [0..PI]
-    double QcRaw  = (2.*PI*cutoff)/samplerate; 
+    double QcRaw  = (2 * PI * cutoff) / samplerate; // Find cutoff frequency in [0..PI]
     double QcWarp = tan(QcRaw); // Warp cutoff frequency
 
-    double gain = 1./(1.+sqrt2/QcWarp + 2./(QcWarp*QcWarp));
-    // double gain = 30.0 / (1+sqrt2/QcWarp + 2/(QcWarp*QcWarp));
-    by[2] = (1. - sqrt2/QcWarp + 2./(QcWarp*QcWarp)) * gain;
-    by[1] = (2. - 2.*2./(QcWarp*QcWarp))*gain;
-    by[0] = 1.;
-    ax[0] = 1.* gain;
-    ax[1] = 2.* gain;
-    ax[2] = 1.* gain;
+    double gain = 1 / (1+sqrt2/QcWarp + 2/(QcWarp*QcWarp));
+    by[2] = (1 - sqrt2/QcWarp + 2/(QcWarp*QcWarp)) * gain;
+    by[1] = (2 - 2 * 2/(QcWarp*QcWarp)) * gain;
+    by[0] = 1;
+    ax[0] = 1 * gain;
+    ax[1] = 2 * gain;
+    ax[2] = 1 * gain;
 }
 
-// void ButterworthFilter(float* samples, float* samplespassed, int count, int sampleRate)
-void ButterworthFilter(float* samples, float* samplespassed, int count, int sampleRate, float cutoff)
+void ButterworthFilter(float* samples, float* samplespassed, int count, int sampleRate, double cutoff)
 {
-    double xv[3];
-    double yv[3];
-    double ax[3];
-    double by[3];
+    double xv[3] = {samples[0]};
+    double yv[3] = {samples[0]};
+    double ax[3] = {0};
+    double by[3] = {0};
 
-//  getLPCoefficientsButterworth2Pole(sampleRate, 2, ax, by);
+    // cutoff = 20
     getLPCoefficientsButterworth2Pole(sampleRate, cutoff, ax, by);
 
-    for (int i=0;i<count;i++)
+    for (int i = 0; i < count; i++)
     {
         xv[2] = xv[1]; xv[1] = xv[0];
         xv[0] = samples[i];
@@ -455,7 +449,13 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
         // apply low-pass filtering to dboriginal
         // to permit some variation in db level deviating from original
 //      ButterworthFilter(amporiginal[k], amplowpassed[k], npts, frameRate);
-      ButterworthFilter(amporiginal[k],amplowpassed[k],npts,frameRate,cutoff);
+      ButterworthFilter(amporiginal[k], amplowpassed[k], npts, frameRate, cutoff);
+      for (i = 0; i < attackf; i++) {
+          amplowpassed[k][i] = amporiginal[k][i];
+      }
+      for (i = decayf; i < npts; i++) {
+          amplowpassed[k][i] = amporiginal[k][i];
+      }
     }
 
     //shift amplowpassed
@@ -474,6 +474,23 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
             amplowpassed[k][shift] = amplowpassed[k][npts - shiftamount - 1];
         }
     }
+
+    // plot a harmonic amplitude				    /*jwb 11/08/17 */
+        P("After low pass on harmonics amplitude --\n\n");
+        P("Give harmonic number of amplitude to plot: ");
+        scanf("%d%*c", &k);
+        float *Haramp = (float*)calloc(npts,sizeof(float));
+        float *Time = (float*)calloc(npts,sizeof(float));
+        for(i=0; i<nptsnew; i++)
+        {
+          Haramp[i] = amplowpassed[k][i];
+          Time[i] = i*dt;
+        }
+        char svlabel[80];
+        sprintf(svlabel,"HARMONIC AMPL %d", k);
+        plotseg(Time,Haramp,npts,"TIME (SEC)",svlabel);
+    // end plot a harmonic amplitude
+
     //time scale amplowpassed
     for (k = 1; k < nhar1; k++)
     {
@@ -507,26 +524,26 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
         }
     }
 
+    // plot a harmonic amplitude				    /*jwb 11/08/17 */
+
+        P("After low pass on harmonics amplitude --\n\n");
+        P("Give harmonic number of amplitude to plot: ");
+        scanf("%d%*c", &k);
+        float* Harampnew = (float*)calloc(nptsnew,sizeof(float));
+        float* Timenew = (float*)calloc(nptsnew,sizeof(float));
+        for(i=0; i<nptsnew; i++)
+        {
+          Harampnew[i] = amplowpassednew[k][i];
+          Timenew[i] = i*dt;
+        }
+        sprintf(svlabel,"HARMONIC AMPL %d", k);
+        plotseg(Timenew,Harampnew,nptsnew,"TIME (SEC)",svlabel);
+    // end plot a harmonic amplitude
+
     //loop microvaria
     *cmag = (float*)calloc(nptsnew * nhar1, sizeof(float));
     *dfr = (float*)calloc(nptsnew * nhar1, sizeof(float));
 
-// plot a harmonic amplitude				    /*jwb 11/08/17 */
-
-    P("After low pass and extend on harmonics amplitude --\n\n");
-    P("Give harmonic number of amplitude to plot: ");
-    scanf("%d%*c", &k);
-    float *Haramp = (float*)calloc(nptsnew,sizeof(float));
-    float *Time = (float*)calloc(nptsnew,sizeof(float));
-    for(i=0; i<nptsnew; i++)
-    {
-      Haramp[i] = amplowpassednew[k][i];
-      Time[i] = i*dt;
-    } 
-    char svlabel[80];
-    sprintf(svlabel,"HARMONIC AMPL %d", k);
-    plotseg(Time,Haramp,nptsnew,"TIME (SEC)",svlabel);
-// end plot a harmonic amplitude
 
     int samplePointer = 0;
     int fullloop = ratio / 2;
