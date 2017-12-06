@@ -296,7 +296,7 @@ void extendsyn(float** cmag, float** dfr, int nhar1, float length, float extensi
         }
         // apply low-pass filtering to dboriginal
         // to permit some variation in db level deviating from original
-        ButterworthFilter(amporiginal[k], amplowpassed[k], npts, frameRate);
+        //ButterworthFilter(amporiginal[k], amplowpassed[k], npts, frameRate);
     }
 
 

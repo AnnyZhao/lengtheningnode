@@ -2,6 +2,8 @@
  *
  *		plotseg.c
  *
+ *      Most recent edit on 10/04/11
+ *
  *	contains functions plotseg()  plotseg1(), plotseg2(),
  *	plotseg3(), plotbar(), plotbar1()
  *
@@ -27,15 +29,18 @@
  *		  remove research mode code and approve function.
  *	6/30/92:  append with plotbar1, a different version of plotbar.
  *	7/10/92:  install plabel in plotbar1()
- *	11/29/97	zheng	Use gets and sscanf for input
- *	10/09/98  jwb	plotseg2(): Install line thickness variable.
+ *	03/18/97  jwb plotseg(): Don't let vertical scale get too small.
+ *	11/29/97 zheng	Use gets and sscanf for input
+ *      10/04/11 Install set line thickness for all plot routines.
  *****************************************************************************/
 #include <math.h>
 #include <stdio.h>
+#include <strings.h>
 #include "g_raph.h"
 #include "macro.h"
 #define NHTICKS 11
 #define NVTICKS 11
+#define MINLINETHICK 10
 #define A .15    /* left X border  */
 #define B .05    /* right X border */
 #define C .25    /* bottom Y border */
@@ -62,12 +67,12 @@ plotseg(x,y,npts,xlabel,ylabel) float x[],y[]; int npts; char *xlabel,*ylabel;
 	ymin = min(ymin,(double)y[i]);
 	ymax = max(ymax,(double)y[i]);
     }
-    if(ymin == ymax)
+    if((ymax - ymin) < .01)				    /* jwb 3/18/97 */
     { while(1)
       {
-        P(stderr,"give vertical range (ymin ymax): ");
-        gets(resp);					/* zheng 11/29/97 */
-	if (sscanf(resp,"%f %f",&ymin,&ymax)==2) break;
+	P(stderr,"give vertical range (ymin ymax): ");
+	gets(resp);					/* zheng 11/29/97 */
+	if (sscanf(resp,"%lf%lf",&ymin,&ymax)==2) break;    /* jwb 3/18/97 */
       }
     }
 
@@ -101,19 +106,22 @@ plotseg(x,y,npts,xlabel,ylabel) float x[],y[]; int npts; char *xlabel,*ylabel;
       yinc *= pow(10.,omag);
       if(yinc - floor(yinc) > .25) nvdigits = 1;  /* handles Y.5 case */
     }
-/*   P(stderr,"before floor/ceil: ymin=%f, ymax=%f, yinc=%f\n",ymin,ymax,yinc); */
+/*
+     P(stderr,"before floor/ceil: ymin=%f, ymax=%f, yinc=%f\n",ymin,ymax,yinc); 
+*/
     ymin = floor(ymin/yinc)*yinc;
     ymax = ceil(ymax/yinc)*yinc;
     nvticks = 1 + (ymax - ymin)/yinc +.5;
-/*    P(stderr,"after floor/ceil: ymin=%f, ymax=%f, nvticks=%d\n",ymin,ymax,nvticks);
-    getchar();  */
-
+/*
+      P(stderr,"after floor/ceil: ymin=%f, ymax=%f, nvticks=%d\n",ymin,ymax,nvticks);
+*/
     /*	set window within current viewport  */
 
     xwmin = (1.+A)*xmin - A*xmax;  xwmax = (1.+B)*xmax - B*xmin;
     ywmin = (1.+C)*ymin - C*ymax;  ywmax = (1.+D)*ymax - D*ymin;
 
     g_init();
+    g_set_line_thickness(MINLINETHICK);                     /* jwb 10/04/11 */
 /*
     P(stderr,"xwmin=%f,xwmax=%f,ywmin=%f,ywmax=%f\n",xwmin,xwmax,ywmin,ywmax);
     fflush(stderr);
@@ -125,7 +133,7 @@ plotseg(x,y,npts,xlabel,ylabel) float x[],y[]; int npts; char *xlabel,*ylabel;
     g_axis(xmin,ymin,xmax-xmin,xlabel, 1,2,0, xmin, xinc, nhticks, nhdigits);
     g_axis(xmin,ymin,ymax-ymin,ylabel, 1,2,90,ymin, yinc, nvticks, nvdigits);
     g_text_extent(" ",&textwidth,&textheight);
-    plabel(xmin, ymin -4.*textheight);
+    plabel(xmin -5.*textwidth, ymin -4.*textheight);
 
    /*  draw graph  */
 
@@ -162,13 +170,14 @@ plotseg1(x,y,npts,xlabel,ylabel,x1,x2,y1,y2,nhticks,nvticks)
     xwmin = (1.+A)*xmin - A*xmax;  xwmax = (1.+B)*xmax - B*xmin;
     ywmin = (1.+C)*ymin - C*ymax;  ywmax = (1.+D)*ymax - D*ymin;
     g_init();
+    g_set_line_thickness(MINLINETHICK);                     /* jwb 10/04/11 */
     g_set_window(xwmin,xwmax,ywmin,ywmax);
 
     g_axis(xmin,ymin,xmax-xmin,xlabel, 1,2,0, xmin, xinc, nhticks, nhdigits);
     g_axis(xmin,ymin,ymax-ymin,ylabel, 1,2,90,ymin, yinc, nvticks, nvdigits);
 
     g_text_extent(" ",&textwidth,&textheight);
-    plabel(xmin, ymin -4.*textheight);
+    plabel(xmin -5.*textwidth, ymin -4.*textheight);
 
    /*  reset viewport and window and draw graph  */
     g_inquire_viewport(&xvmin,&xvmax,&yvmin,&yvmax);
@@ -185,9 +194,9 @@ plotseg1(x,y,npts,xlabel,ylabel,x1,x2,y1,y2,nhticks,nvticks)
     g_term();
 }
 
-plotseg2(x,y,npts,xlabel,ylabel,y1,y2,nvticks,linethick)    /* jwb 10/09/98 */
+plotseg2(x,y,npts,xlabel,ylabel,y1,y2,nvticks) 
 	float x[],y[]; int npts; char *xlabel,*ylabel;
-    	float y1,y2; int nvticks,linethick;		    /* jwb 10/09/98 */
+    	float y1,y2; int nvticks;
 /*  same as plotseg() except vertical scale is predetermined   */
 {
     static double xmin,xmax,ymin,ymax,xinc,yinc,omag;
@@ -195,7 +204,7 @@ plotseg2(x,y,npts,xlabel,ylabel,y1,y2,nvticks,linethick)    /* jwb 10/09/98 */
     static double xvmin_new,xvmax_new,yvmin_new,yvmax_new;
     static int nhdigits,nvdigits,nhticks;
     int i,j;
-    char resp[20];
+    char resp[40];
 
      ymin=y1; ymax=y2;
     /*	 find the min and max values of x for the plot range  */
@@ -209,8 +218,7 @@ plotseg2(x,y,npts,xlabel,ylabel,y1,y2,nvticks,linethick)    /* jwb 10/09/98 */
     { while(1)
       {
 	P(stderr,"give vertical range (ymin ymax): ");
-	gets(resp);					/* zheng 11/29/97 */
-        if (sscanf(resp,"%f %f",&ymin,&ymax)==2) break;
+	if (sscanf(resp,"%f %f",&ymin,&ymax)==2) break;
       }
     }
 
@@ -239,14 +247,14 @@ plotseg2(x,y,npts,xlabel,ylabel,y1,y2,nvticks,linethick)    /* jwb 10/09/98 */
     xwmin = (1.+A)*xmin - A*xmax;  xwmax = (1.+B)*xmax - B*xmin;
     ywmin = (1.+C)*ymin - C*ymax;  ywmax = (1.+D)*ymax - D*ymin;
     g_init();
-    g_set_line_thickness(linethick);			    /* jwb 10/09/98 */
+    g_set_line_thickness(MINLINETHICK);                     /* jwb 10/04/11 */
     g_set_window(xwmin,xwmax,ywmin,ywmax);
 
     g_axis(xmin,ymin,xmax-xmin,xlabel, 1,2,0, xmin, xinc, nhticks, nhdigits);
     g_axis(xmin,ymin,ymax-ymin,ylabel, 1,2,90,ymin, yinc, nvticks, nvdigits);
 
     g_text_extent(" ",&textwidth,&textheight);
-    plabel(xmin, ymin -4.*textheight);
+    plabel(xmin -5.*textwidth, ymin -4.*textheight);
 
    /*  reset viewport and window and draw graph  */
     g_inquire_viewport(&xvmin,&xvmax,&yvmin,&yvmax);
@@ -310,13 +318,14 @@ plotseg3(x,y,npts,xlabel,ylabel,x1,x2,nhticks)
     xwmin = (1.+A)*xmin - A*xmax;  xwmax = (1.+B)*xmax - B*xmin;
     ywmin = (1.+C)*ymin - C*ymax;  ywmax = (1.+D)*ymax - D*ymin;
     g_init();
+    g_set_line_thickness(MINLINETHICK);                     /* jwb 10/04/11 */
     g_set_window(xwmin,xwmax,ywmin,ywmax);
 
     g_axis(xmin,ymin,xmax-xmin,xlabel, 1,2,0, xmin, xinc, nhticks, nhdigits);
     g_axis(xmin,ymin,ymax-ymin,ylabel, 1,2,90,ymin, yinc, nvticks, nvdigits);
 
     g_text_extent(" ",&textwidth,&textheight);
-    plabel(xmin, ymin -4.*textheight);
+    plabel(xmin -5.*textwidth, ymin -4.*textheight);
 
    /*  reset viewport and window and draw graph  */
     g_inquire_viewport(&xvmin,&xvmax,&yvmin,&yvmax);
@@ -385,6 +394,7 @@ float y[]; int n1, n2, npts; char *xlabel,*ylabel, *string;
     getchar();
 */
     g_init();
+    g_set_line_thickness(MINLINETHICK);                     /* jwb 10/04/11 */
     g_set_window(xwmin,xwmax,ywmin,ywmax);
 
     g_axis(xmin,ymin,xmax-xmin,xlabel, 1,2,0, xmin, xinc, nhticks, nhdigits);
@@ -480,6 +490,7 @@ plotbar1(x,y,npts,xlabel,ylabel) float x[],y[]; int npts; char *xlabel,*ylabel;
  */ 
 
     g_init();
+    g_set_line_thickness(MINLINETHICK);                     /* jwb 10/04/11 */
     g_set_window(xwmin,xwmax,ywmin,ywmax);
 
     g_axis(xmin,ymin,xmax-xmin,xlabel, 1,2,0, xmin, xinc, nhticks, nhdigits);
@@ -487,7 +498,7 @@ plotbar1(x,y,npts,xlabel,ylabel) float x[],y[]; int npts; char *xlabel,*ylabel;
     g_axis(xmin,ymin,ymax-ymin,ylabel, 1,2,90,ymin, yinc, nvticks, nvdigits);
 
     g_text_extent(" ",&textwidth,&textheight);
-    plabel(xmin, ymin -4.*textheight);
+    plabel(xmin -5.*textwidth, ymin -4.*textheight);
 
    /*  draw graph  */
 
