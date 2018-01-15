@@ -18,59 +18,61 @@ Init Nonlinear Processor function generator with name Nlpfun
 [Pass-2]
 [Pass 2 Successful]
 [Pass-3]
-Read file cfl500.3.pv.an 
+Read file cfl504.3.pv.an 
 Date Recorded: 9/18/95
 Instrument is flute
-Analysis frequency = 531.4 Hz
-Time between frames = 0.00094 sec
+Analysis frequency = 671.9 Hz
+Time between frames = 0.00074 sec
 Analysis format is type compact
-Number of analysis frames is 2291
-Number of harmonics per frame = 20
-Duration of sound is 2.156
+Number of analysis frames is 2531
+Number of harmonics per frame = 15
+Duration of sound is 1.883
 
 Type : compact
 
-Add syn of file cfl500.3.pv.an at start_time = 0.000, duration = 0.750
+Add syn of file cfl504.3.pv.an at start_time = 0.000, duration = 0.750
 pitch = 9.030, ampscale= 1.000
-original sound duration is 2.156 sec:
-npts in findattackdecay is 2291
-db average = 59.4
-npts=2291
-attack frame is 263
-decay frame is 1978
-dt is 0.000941
-attackt is 0.247460 and decayt is 1.861122
-minimum duration is 0.542
-npts in findattackdecay is 2291
-db average = 59.4
-npts=2291
-attack frame is 263
-decay frame is 1978
-nptsnew: 797
-overlapF: 221
-shiftF: 1494
-the size of cmag and dfr is 16737
+original sound duration is 1.883 sec:
+npts in findattackdecay is 2531
+db average = 58.0
+npts=2531
+attack frame is 321
+decay frame is 2085
+decay frame is 2088
+dt is 0.000744
+attackt is 0.238875 and decayt is 1.553803
+minimum duration is 0.569
+npts in findattackdecay is 2531
+db average = 58.0
+npts=2531
+attack frame is 321
+decay frame is 2085
+decay frame is 2088
+nptsnew: 1007
+overlapF: 243
+shiftF: 1524
+the size of cmag and dfr is 16112
 for frame 0 the coeffienct is 0.000000
-crossfade frame 263 with frame 1757
-for frame 1 the coeffienct is 0.004525
-crossfade frame 264 with frame 1758
-for frame 2 the coeffienct is 0.009050
-crossfade frame 265 with frame 1759
-for frame 3 the coeffienct is 0.013575
-crossfade frame 266 with frame 1760
-for frame 4 the coeffienct is 0.018100
-crossfade frame 267 with frame 1761
-for frame 5 the coeffienct is 0.022624
-crossfade frame 268 with frame 1762
-for frame 6 the coeffienct is 0.027149
-crossfade frame 269 with frame 1763
-for frame 7 the coeffienct is 0.031674
-crossfade frame 270 with frame 1764
-for frame 8 the coeffienct is 0.036199
-crossfade frame 271 with frame 1765
-for frame 9 the coeffienct is 0.040724
-crossfade frame 272 with frame 1766
-dxi: 0.048133
+crossfade frame 321 with frame 1845
+for frame 1 the coeffienct is 0.004115
+crossfade frame 322 with frame 1846
+for frame 2 the coeffienct is 0.008230
+crossfade frame 323 with frame 1847
+for frame 3 the coeffienct is 0.012346
+crossfade frame 324 with frame 1848
+for frame 4 the coeffienct is 0.016461
+crossfade frame 325 with frame 1849
+for frame 5 the coeffienct is 0.020576
+crossfade frame 326 with frame 1850
+for frame 6 the coeffienct is 0.024691
+crossfade frame 327 with frame 1851
+for frame 7 the coeffienct is 0.028807
+crossfade frame 328 with frame 1852
+for frame 8 the coeffienct is 0.032922
+crossfade frame 329 with frame 1853
+for frame 9 the coeffienct is 0.037037
+crossfade frame 330 with frame 1854
+dxi: 0.060831
 Complete addsyn setup
 Read file cfl500.3cutend.pv.an 
 Date Recorded: 9/18/95
@@ -363,59 +365,58 @@ for frame 9 the coeffienct is 0.068702
 crossfade frame 215 with frame 1478
 dxi: 0.047347
 Complete addsyn setup
-Read file cfl500.3cutend.pv.an 
+Read file cfl504.3.pv.an 
 Date Recorded: 9/18/95
 Instrument is flute
-Analysis frequency = 523.0 Hz
-Time between frames = 0.00096 sec
-Analysis format is type simple
-Number of analysis frames is 1786
-Number of harmonics per frame = 21
-Duration of sound is 1.707
+Analysis frequency = 671.9 Hz
+Time between frames = 0.00074 sec
+Analysis format is type compact
+Number of analysis frames is 2531
+Number of harmonics per frame = 15
+Duration of sound is 1.883
 
-Type : simple
+Type : compact
 
-Add syn of file cfl500.3cutend.pv.an at start_time = 3.500, duration = 0.500
+Add syn of file cfl504.3.pv.an at start_time = 3.500, duration = 0.500
 pitch = 9.030, ampscale= 0.600
-original sound duration is 1.707 sec:
-npts in findattackdecay is 1786
-db average = 70.6
-npts=1786
-attack frame is 206
-decay frame is 1600
-dt is 0.000956
-attackt is 0.196941 and decayt is 1.529637
-minimum duration is 0.375
-npts in findattackdecay is 1786
-db average = 70.6
-npts=1786
-attack frame is 206
-decay frame is 1600
-nptsnew: 523
-overlapF: 131
-shiftF: 1263
-the size of cmag and dfr is 11506
+original sound duration is 1.883 sec:
+npts in findattackdecay is 2531
+db average = 58.0
+npts=2531
+attack frame is 321
+decay frame is 2085
+decay frame is 2088
+dt is 0.000744
+attackt is 0.238875 and decayt is 1.553803
+minimum duration is 0.569
+npts in findattackdecay is 2531
+db average = 58.0
+npts=2531
+attack frame is 321
+decay frame is 2085
+decay frame is 2088
+nptsnew: 771
+overlapF: 7
+shiftF: 1760
+the size of cmag and dfr is 12336
 for frame 0 the coeffienct is 0.000000
-crossfade frame 206 with frame 1469
-for frame 1 the coeffienct is 0.007634
-crossfade frame 207 with frame 1470
-for frame 2 the coeffienct is 0.015267
-crossfade frame 208 with frame 1471
-for frame 3 the coeffienct is 0.022901
-crossfade frame 209 with frame 1472
-for frame 4 the coeffienct is 0.030534
-crossfade frame 210 with frame 1473
-for frame 5 the coeffienct is 0.038168
-crossfade frame 211 with frame 1474
-for frame 6 the coeffienct is 0.045802
-crossfade frame 212 with frame 1475
-for frame 7 the coeffienct is 0.053435
-crossfade frame 213 with frame 1476
-for frame 8 the coeffienct is 0.061069
-crossfade frame 214 with frame 1477
-for frame 9 the coeffienct is 0.068702
-crossfade frame 215 with frame 1478
-dxi: 0.047347
+crossfade frame 321 with frame 2081
+for frame 1 the coeffienct is 0.142857
+crossfade frame 322 with frame 2082
+for frame 2 the coeffienct is 0.285714
+crossfade frame 323 with frame 2083
+for frame 3 the coeffienct is 0.428571
+crossfade frame 324 with frame 2084
+for frame 4 the coeffienct is 0.571429
+crossfade frame 325 with frame 2085
+for frame 5 the coeffienct is 0.714286
+crossfade frame 326 with frame 2086
+for frame 6 the coeffienct is 0.857143
+crossfade frame 327 with frame 2087
+for frame 7 the coeffienct is 1.000000
+crossfade frame 328 with frame 2088
+the size of cmag and dfr is 10736
+dxi: 0.060771
 Complete addsyn setup
 Read file cfl500.3cutend.pv.an 
 Date Recorded: 9/18/95
@@ -644,9 +645,9 @@ attack frame is 206
 decay frame is 1600
 nptsnew: 1830
 number of full loops: 0
-mduration is 1.202677
+mduration is 0.652964
 final loop time is 0.042543
-the reversef is 1507
+the reversef is 1158
 the extension is done
 dxi: 0.047399
 Complete addsyn setup
@@ -1610,331 +1611,3 @@ for frame 9 the coeffienct is 0.022959
 crossfade frame 215 with frame 1217
 dxi: 0.047347
 Complete addsyn setup
-Read file cfl500.3cutend.pv.an 
-Date Recorded: 9/18/95
-Instrument is flute
-Analysis frequency = 523.0 Hz
-Time between frames = 0.00096 sec
-Analysis format is type simple
-Number of analysis frames is 1786
-Number of harmonics per frame = 21
-Duration of sound is 1.707
-
-Type : simple
-
-Add syn of file cfl500.3cutend.pv.an at start_time = 20.000, duration = 3.750
-pitch = 9.070, ampscale= 0.600
-original sound duration is 1.707 sec:
-npts in findattackdecay is 1786
-db average = 70.6
-npts=1786
-attack frame is 206
-decay frame is 1600
-dt is 0.000956
-attackt is 0.196941 and decayt is 1.529637
-minimum duration is 0.375
-mduration is 1.202677
-extendt is 2.042543
-ratio is 1.698331
-npts in findattackdecay is 1786
-db average = 70.6
-npts=1786
-attack frame is 206
-decay frame is 1600
-nptsnew: 3922
-number of full loops: 0
-mduration is 1.202677
-final loop time is 2.042543
-the reversef is 461
-the extension is done
-dxi: 0.047419
-Complete addsyn setup
-Read file cfl500.3cutend.pv.an 
-Date Recorded: 9/18/95
-Instrument is flute
-Analysis frequency = 523.0 Hz
-Time between frames = 0.00096 sec
-Analysis format is type simple
-Number of analysis frames is 1786
-Number of harmonics per frame = 21
-Duration of sound is 1.707
-
-Type : simple
-
-Add syn of file cfl500.3cutend.pv.an at start_time = 24.000, duration = 0.500
-pitch = 9.070, ampscale= 1.000
-original sound duration is 1.707 sec:
-npts in findattackdecay is 1786
-db average = 70.6
-npts=1786
-attack frame is 206
-decay frame is 1600
-dt is 0.000956
-attackt is 0.196941 and decayt is 1.529637
-minimum duration is 0.375
-npts in findattackdecay is 1786
-db average = 70.6
-npts=1786
-attack frame is 206
-decay frame is 1600
-nptsnew: 523
-overlapF: 131
-shiftF: 1263
-the size of cmag and dfr is 11506
-for frame 0 the coeffienct is 0.000000
-crossfade frame 206 with frame 1469
-for frame 1 the coeffienct is 0.007634
-crossfade frame 207 with frame 1470
-for frame 2 the coeffienct is 0.015267
-crossfade frame 208 with frame 1471
-for frame 3 the coeffienct is 0.022901
-crossfade frame 209 with frame 1472
-for frame 4 the coeffienct is 0.030534
-crossfade frame 210 with frame 1473
-for frame 5 the coeffienct is 0.038168
-crossfade frame 211 with frame 1474
-for frame 6 the coeffienct is 0.045802
-crossfade frame 212 with frame 1475
-for frame 7 the coeffienct is 0.053435
-crossfade frame 213 with frame 1476
-for frame 8 the coeffienct is 0.061069
-crossfade frame 214 with frame 1477
-for frame 9 the coeffienct is 0.068702
-crossfade frame 215 with frame 1478
-dxi: 0.047347
-Complete addsyn setup
-Read file cfl500.3cutend.pv.an 
-Date Recorded: 9/18/95
-Instrument is flute
-Analysis frequency = 523.0 Hz
-Time between frames = 0.00096 sec
-Analysis format is type simple
-Number of analysis frames is 1786
-Number of harmonics per frame = 21
-Duration of sound is 1.707
-
-Type : simple
-
-Add syn of file cfl500.3cutend.pv.an at start_time = 24.500, duration = 0.250
-pitch = 9.030, ampscale= 0.400
-original sound duration is 1.707 sec:
-npts in findattackdecay is 1786
-db average = 70.6
-npts=1786
-attack frame is 206
-decay frame is 1600
-dt is 0.000956
-attackt is 0.196941 and decayt is 1.529637
-minimum duration is 0.375
-npts in findattackdecay is 1786
-db average = 70.6
-npts=1786
-attack frame is 206
-decay frame is 1600
-nptsnew: 395
-overlapF: 3
-shiftF: 1391
-the size of cmag and dfr is 8690
-for frame 0 the coeffienct is 0.000000
-crossfade frame 206 with frame 1597
-for frame 1 the coeffienct is 0.333333
-crossfade frame 207 with frame 1598
-for frame 2 the coeffienct is 0.666667
-crossfade frame 208 with frame 1599
-for frame 3 the coeffienct is 1.000000
-crossfade frame 209 with frame 1600
-the size of cmag and dfr is 5742
-dxi: 0.047166
-Complete addsyn setup
-Read file cfl500.3cutend.pv.an 
-Date Recorded: 9/18/95
-Instrument is flute
-Analysis frequency = 523.0 Hz
-Time between frames = 0.00096 sec
-Analysis format is type simple
-Number of analysis frames is 1786
-Number of harmonics per frame = 21
-Duration of sound is 1.707
-
-Type : simple
-
-Add syn of file cfl500.3cutend.pv.an at start_time = 24.750, duration = 2.250
-pitch = 9.030, ampscale= 0.400
-original sound duration is 1.707 sec:
-npts in findattackdecay is 1786
-db average = 70.6
-npts=1786
-attack frame is 206
-decay frame is 1600
-dt is 0.000956
-attackt is 0.196941 and decayt is 1.529637
-minimum duration is 0.375
-mduration is 1.202677
-extendt is 0.542543
-ratio is 0.451113
-npts in findattackdecay is 1786
-db average = 70.6
-npts=1786
-attack frame is 206
-decay frame is 1600
-nptsnew: 2353
-number of full loops: 0
-mduration is 1.202677
-final loop time is 0.542543
-the reversef is 1246
-the extension is done
-dxi: 0.047407
-Complete addsyn setup
-Read file cfl500.3cutend.pv.an 
-Date Recorded: 9/18/95
-Instrument is flute
-Analysis frequency = 523.0 Hz
-Time between frames = 0.00096 sec
-Analysis format is type simple
-Number of analysis frames is 1786
-Number of harmonics per frame = 21
-Duration of sound is 1.707
-
-Type : simple
-
-Add syn of file cfl500.3cutend.pv.an at start_time = 27.000, duration = 0.500
-pitch = 9.030, ampscale= 0.500
-original sound duration is 1.707 sec:
-npts in findattackdecay is 1786
-db average = 70.6
-npts=1786
-attack frame is 206
-decay frame is 1600
-dt is 0.000956
-attackt is 0.196941 and decayt is 1.529637
-minimum duration is 0.375
-npts in findattackdecay is 1786
-db average = 70.6
-npts=1786
-attack frame is 206
-decay frame is 1600
-nptsnew: 523
-overlapF: 131
-shiftF: 1263
-the size of cmag and dfr is 11506
-for frame 0 the coeffienct is 0.000000
-crossfade frame 206 with frame 1469
-for frame 1 the coeffienct is 0.007634
-crossfade frame 207 with frame 1470
-for frame 2 the coeffienct is 0.015267
-crossfade frame 208 with frame 1471
-for frame 3 the coeffienct is 0.022901
-crossfade frame 209 with frame 1472
-for frame 4 the coeffienct is 0.030534
-crossfade frame 210 with frame 1473
-for frame 5 the coeffienct is 0.038168
-crossfade frame 211 with frame 1474
-for frame 6 the coeffienct is 0.045802
-crossfade frame 212 with frame 1475
-for frame 7 the coeffienct is 0.053435
-crossfade frame 213 with frame 1476
-for frame 8 the coeffienct is 0.061069
-crossfade frame 214 with frame 1477
-for frame 9 the coeffienct is 0.068702
-crossfade frame 215 with frame 1478
-dxi: 0.047347
-Complete addsyn setup
-Read file cfl500.3cutend.pv.an 
-Date Recorded: 9/18/95
-Instrument is flute
-Analysis frequency = 523.0 Hz
-Time between frames = 0.00096 sec
-Analysis format is type simple
-Number of analysis frames is 1786
-Number of harmonics per frame = 21
-Duration of sound is 1.707
-
-Type : simple
-
-Add syn of file cfl500.3cutend.pv.an at start_time = 27.500, duration = 0.500
-pitch = 9.050, ampscale= 0.800
-original sound duration is 1.707 sec:
-npts in findattackdecay is 1786
-db average = 70.6
-npts=1786
-attack frame is 206
-decay frame is 1600
-dt is 0.000956
-attackt is 0.196941 and decayt is 1.529637
-minimum duration is 0.375
-npts in findattackdecay is 1786
-db average = 70.6
-npts=1786
-attack frame is 206
-decay frame is 1600
-nptsnew: 523
-overlapF: 131
-shiftF: 1263
-the size of cmag and dfr is 11506
-for frame 0 the coeffienct is 0.000000
-crossfade frame 206 with frame 1469
-for frame 1 the coeffienct is 0.007634
-crossfade frame 207 with frame 1470
-for frame 2 the coeffienct is 0.015267
-crossfade frame 208 with frame 1471
-for frame 3 the coeffienct is 0.022901
-crossfade frame 209 with frame 1472
-for frame 4 the coeffienct is 0.030534
-crossfade frame 210 with frame 1473
-for frame 5 the coeffienct is 0.038168
-crossfade frame 211 with frame 1474
-for frame 6 the coeffienct is 0.045802
-crossfade frame 212 with frame 1475
-for frame 7 the coeffienct is 0.053435
-crossfade frame 213 with frame 1476
-for frame 8 the coeffienct is 0.061069
-crossfade frame 214 with frame 1477
-for frame 9 the coeffienct is 0.068702
-crossfade frame 215 with frame 1478
-dxi: 0.047347
-Complete addsyn setup
-Read file cfl500.3cutend.pv.an 
-Date Recorded: 9/18/95
-Instrument is flute
-Analysis frequency = 523.0 Hz
-Time between frames = 0.00096 sec
-Analysis format is type simple
-Number of analysis frames is 1786
-Number of harmonics per frame = 21
-Duration of sound is 1.707
-
-Type : simple
-
-Add syn of file cfl500.3cutend.pv.an at start_time = 28.000, duration = 2.000
-pitch = 9.030, ampscale= 0.500
-original sound duration is 1.707 sec:
-npts in findattackdecay is 1786
-db average = 70.6
-npts=1786
-attack frame is 206
-decay frame is 1600
-dt is 0.000956
-attackt is 0.196941 and decayt is 1.529637
-minimum duration is 0.375
-mduration is 1.202677
-extendt is 0.292543
-ratio is 0.243243
-npts in findattackdecay is 1786
-db average = 70.6
-npts=1786
-attack frame is 206
-decay frame is 1600
-nptsnew: 2092
-number of full loops: 0
-mduration is 1.202677
-final loop time is 0.292543
-the reversef is 1376
-the extension is done
-dxi: 0.047415
-Complete addsyn setup
-	Peak values for channels:
-	[1] =  18903.350
-	End of Performance.
-	Total Time = 30.00, Section Time = 30.00
-[Pass 3 Successful]
-[Job Complete]
